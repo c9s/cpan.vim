@@ -1,9 +1,92 @@
 
+" vim:fdm=marker:
 let g:mlist_filename = expand('~/.vim-cpan-modules')
+
+" {{{
+fu! s:GetCursorModuleName()
+  let cw = substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
+  return cw
+endf
+
+fu! s:GetMethodName()
+  let cw = expand("<cWORD>")
+  let m = substitute( cw , '.\{-}\([a-zA-Z0-9_:]\+\)->\(\w\+\).*$' , '\2' , '' )
+  if m != cw 
+    return m
+  else
+    return
+  endif
+endf
+
+fu! s:TranslateModuleName(n)
+  return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
+endf
+
+fu! s:GetPerlLibPaths()
+  let out = system('perl -e ''print join "\n",@INC''')
+  let paths = split( out , "\n" ) 
+  return paths
+endf
+
+fu! TabGotoFile(fullpath,method)
+    execute ':tabedit ' . a:fullpath
+    if strlen(a:method) > 0
+      let s = search( '^sub\s\+' . a:method . '\s' , '', 0 )
+      if !s 
+        "echomsg "Can not found method: " . a:method 
+      endif
+    endif
+    return 1
+endf
+
+fu! GotoFile(fullpath,method)
+    execute ':e ' . a:fullpath
+    if strlen(a:method) > 0
+      let s = search( '^sub\s\+' . a:method . '\s' , '', 0 )
+      if !s 
+        "echomsg "Can not found method: " . a:method 
+      endif
+    endif
+    return 1
+endf
+
+fu! FindModuleByCWord()
+    let mod = call s:GetCursorModuleName()
+    call s:GotoModuleFileInPaths( mod )
+endf
+
+fu! s:GotoModuleFileInPaths(mod)
+  let paths = s:GetPerlLibPaths()
+  let fname = s:TranslateModuleName( a:mod )
+  let methodname = s:GetMethodName()
+  call insert(paths, 'lib/' )
+  for p in paths 
+    let fullpath = p . '/' . fname
+    if filereadable( fullpath ) && GotoFile( fullpath , methodname ) 
+      break
+    endif
+  endfor
+endf
+" }}}
+
+fu! ReadModule()
+  resize 50
+  call s:GotoModuleFileInPaths( getline('.') )
+endf
 
 fu! s:InitMapping()
     inoremap <buffer> <Enter> <ESC>:call SearchCPANModule()<CR>
-    inoremap <buffer> <C-n> <ESC>:call SelectResult()<CR>
+    nnoremap <buffer> <Enter> :call ReadModule()<CR>
+    inoremap <buffer> <C-n> <ESC>j
+
+    nnoremap <buffer> <C-n> j
+    nnoremap <buffer> <C-p> k
+endf
+
+fu! s:InitSyntax()
+    if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+        "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+    endif
 endf
 
 fu! OpenModuleWindow()
@@ -14,12 +97,13 @@ fu! OpenModuleWindow()
     setlocal nobuflisted
     setlocal nowrap
     setlocal cursorline
-    " hi CursorLine ctermbg=DarkCyan ctermfg=Black
+    setfiletype cpanwindow
     let g:pkg_cache = GetCPANModuleList()
     call s:RenderResult( g:pkg_cache )
     call cursor( 1, 1 )
-    startinsert
     call s:InitMapping()
+    call s:InitSyntax()
+    startinsert
 endf
 
 fu! SearchCPANModule()
