@@ -81,6 +81,9 @@ fu! s:InitMapping()
 
     nnoremap <buffer> <C-n> j
     nnoremap <buffer> <C-p> k
+
+    " http://search.cpan.org/search?query=Data%3A%3ADumper&mode=all&sourceid=Mozilla-search
+    nnoremap <buffer> @   :exec '!open -a Firefox http://search.cpan.org/search?query=' . expand('<cWORD>') . '&mode=all'<CR>
 endf
 
 fu! s:InitSyntax()
