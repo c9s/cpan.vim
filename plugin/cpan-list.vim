@@ -1,14 +1,34 @@
+" cpan-list.vim
+" vim:fdm=marker:et:sw=2:
+"
+" Author: Cornelius <cornelius.howl@gmail.com>
+" Date: Sun Sep 19 10:47:15 2009
+" Keywords: perl , cpan , vim
+" 
+" This file is free software; you can redistribute it and/or modify it under
+" the terms of the GNU General Public License as published by the Free
+" Software Foundation; either version 2, or (at your option) any later
+" version.
+" 
+" This file is distributed in the hope that it will be useful, but WITHOUT ANY
+" WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+" FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+" details.
+" 
+" You should have received a copy of the GNU General Public License along with
+" GNU Emacs; see the file COPYING.  If not, write to the Free Software
+" Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+" USA.
 
-" vim:fdm=marker:
 let g:mlist_filename = expand('~/.vim-cpan-modules')
 
-" {{{
-fu! s:GetCursorModuleName()
+" standard vim function for perl {{{
+fu! GetCursorModuleName()
   let cw = substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
   return cw
 endf
 
-fu! s:GetMethodName()
+fu! GetCursorMethodName()
   let cw = expand("<cWORD>")
   let m = substitute( cw , '.\{-}\([a-zA-Z0-9_:]\+\)->\(\w\+\).*$' , '\2' , '' )
   if m != cw 
@@ -18,11 +38,11 @@ fu! s:GetMethodName()
   endif
 endf
 
-fu! s:TranslateModuleName(n)
+fu! TranslateModuleName(n)
   return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
 endf
 
-fu! s:GetPerlLibPaths()
+fu! GetPerlLibPaths()
   let out = system('perl -e ''print join "\n",@INC''')
   let paths = split( out , "\n" ) 
   return paths
@@ -51,48 +71,65 @@ fu! GotoFile(fullpath,method)
 endf
 
 fu! FindModuleByCWord()
-    let mod = call s:GetCursorModuleName()
-    call s:GotoModuleFileInPaths( mod )
+    let mod = GetCursorModuleName()
+    call TabGotoModuleFileInPaths( mod )
 endf
 
-fu! s:GotoModuleFileInPaths(mod)
-  let paths = s:GetPerlLibPaths()
-  let fname = s:TranslateModuleName( a:mod )
-  let methodname = s:GetMethodName()
+fu! TabGotoModuleFileInPaths(mod)
+  let paths = GetPerlLibPaths()
+  let fname = TranslateModuleName( a:mod )
+  let methodname = GetCursorMethodName()
   call insert(paths, 'lib/' )
   for p in paths 
     let fullpath = p . '/' . fname
-    if filereadable( fullpath ) && GotoFile( fullpath , methodname ) 
+    if filereadable( fullpath ) && TabGotoFile( fullpath , methodname ) 
       break
     endif
   endfor
 endf
-" }}}
+
+fu! GotoModuleFileInPaths(mod)
+  let paths = GetPerlLibPaths()
+  let fname = TranslateModuleName( a:mod )
+  let methodname = GetCursorMethodName()
+  call insert(paths, 'lib/' )
+  for p in paths 
+    let fullpath = p . '/' . fname
+    if filereadable( fullpath ) && GotoFile( fullpath , methodname ) 
+      return
+    endif
+  endfor
+  echomsg "No such module: " . a:mod
+endf
 
 fu! ReadModule()
   resize 50
-  call s:GotoModuleFileInPaths( getline('.') )
+  call GotoModuleFileInPaths( getline('.') )
 endf
+" }}}
 
-fu! s:InitMapping()
+fu! InitMapping()
     inoremap <buffer> <Enter> <ESC>:call SearchCPANModule()<CR>
     nnoremap <buffer> <Enter> :call ReadModule()<CR>
     inoremap <buffer> <C-n> <ESC>j
 
     nnoremap <buffer> <C-n> j
     nnoremap <buffer> <C-p> k
+    nnoremap <buffer> <ESC> <C-W>q
 
     " http://search.cpan.org/search?query=Data%3A%3ADumper&mode=all&sourceid=Mozilla-search
     nnoremap <buffer> @   :exec '!open -a Firefox http://search.cpan.org/search?query=' . expand('<cWORD>') . '&mode=all'<CR>
+    nnoremap <buffer> $   :exec '!perldoc ' . expand('<cWORD>')<CR>
 endf
 
-fu! s:InitSyntax()
+"string"
+fu! InitSyntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
     endif
 endf
 
-fu! s:OpenModuleWindow()
+fu! OpenModuleWindow()
     9new
     setlocal noswapfile
     setlocal buftype=nofile
@@ -103,10 +140,10 @@ fu! s:OpenModuleWindow()
     setlocal nonumber
     setfiletype cpanwindow
     let g:pkg_cache = GetCPANModuleList()
-    call s:RenderResult( g:pkg_cache )
+    call RenderResult( g:pkg_cache )
     call cursor( 1, 1 )
-    call s:InitMapping()
-    call s:InitSyntax()
+    call InitMapping()
+    call InitSyntax()
     startinsert
 endf
 
@@ -116,20 +153,28 @@ fu! SearchCPANModule()
 
     let old = getpos('.')
     silent 2,$delete _
-    call s:RenderResult( pkgs )
+    call RenderResult( pkgs )
 
     call setpos('.',old)
     startinsert
     call cursor(line("."), col(".") + 1)
 endfunc
 
-fu! s:RenderResult(pkgs)
+fu! RenderResult(pkgs)
     let @o = join( a:pkgs , "\n" )
     silent put o
 endf
 
+fu! FindPerlPackageFiles()
+    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+    let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
+                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+                \ . " | perl -pe 's/^package (.*?);/\$1/' "
+                \ . " | sort | uniq " )
+    return pkgs
+endf
 
-fu! FindCPANModules()
+fu! FindPerlPackages()
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
@@ -143,8 +188,10 @@ fu! GetCPANModuleList()
     if filereadable( g:mlist_filename )
         let pkgs = readfile( g:mlist_filename )
     else
-        let pkgs = FindCPANModules()
+        echo "caching packages..."
+        let pkgs = FindPerlPackages()
         call writefile( pkgs , g:mlist_filename )
+        echo "done"
     endif
     return pkgs
 endf
@@ -176,10 +223,12 @@ fu! CompBase()
     let base =  strpart( line , pos[1] , col )
     return base
 endf
+
 inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-nnoremap <C-x><C-m>  :call <SID>OpenModuleWindow()<CR>
-nnoremap <leader>fm  :call <SID>GotoModuleFileInPaths()<CR>
+nnoremap <C-x><C-m>  :call OpenModuleWindow()<CR>
+nnoremap <leader>fm  :call FindModuleByCWord()<CR>
 
-" AnyEvent::Impl::Qt::Timer
-" AnyEvent::Impl::Perl
-
+" for testing...
+" Jifty::Collection
+" Data::Dumper::Simple
+" AnyEvent::Impl::Perl 
