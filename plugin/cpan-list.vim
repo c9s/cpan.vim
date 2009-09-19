@@ -92,7 +92,7 @@ fu! s:InitSyntax()
     endif
 endf
 
-fu! OpenModuleWindow()
+fu! s:OpenModuleWindow()
     9new
     setlocal noswapfile
     setlocal buftype=nofile
@@ -100,6 +100,7 @@ fu! OpenModuleWindow()
     setlocal nobuflisted
     setlocal nowrap
     setlocal cursorline
+    setlocal nonumber
     setfiletype cpanwindow
     let g:pkg_cache = GetCPANModuleList()
     call s:RenderResult( g:pkg_cache )
@@ -127,7 +128,6 @@ fu! s:RenderResult(pkgs)
     silent put o
 endf
 
-call OpenModuleWindow()
 
 fu! FindCPANModules()
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
@@ -177,6 +177,8 @@ fu! CompBase()
     return base
 endf
 inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+nnoremap <C-x><C-m>  :call <SID>OpenModuleWindow()<CR>
+nnoremap <leader>fm  :call <SID>GotoModuleFileInPaths()<CR>
 
 " AnyEvent::Impl::Qt::Timer
 " AnyEvent::Impl::Perl
