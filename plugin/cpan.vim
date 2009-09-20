@@ -88,8 +88,6 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-
-unlet g:loaded_cpan
 if exists('g:loaded_cpan') || v:version < 701
   finish
 endif
