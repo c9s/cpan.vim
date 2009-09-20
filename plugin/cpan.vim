@@ -32,13 +32,10 @@ let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
 
 fu! GetPerlLibPaths()
-  let out = system('perl -e ''print join "\n",@INC''')
-  let paths = split( out , "\n" ) 
-  return paths
+  return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf
 fu! GetCursorModuleName()
-  let cw = substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
-  return cw
+  return substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
 endf
 fu! GetCursorMethodName()
   let cw = expand("<cWORD>")
