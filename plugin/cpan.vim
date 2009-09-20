@@ -278,8 +278,9 @@ fu! g:CPANWindow.open(wtype)
       exec g:cpan_win_height . 'split'
     endif
     execute self.buf_nr . 'buffer'
-    call cursor( 1, 1 )
+    call RefreshBufferName()
     startinsert
+    call cursor( 1 , col('$')  )
   elseif bufwinnr(self.buf_nr) != bufwinnr('%')
     execute bufwinnr(self.buf_nr) . 'wincmd w'
   endif
