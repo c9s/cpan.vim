@@ -199,25 +199,69 @@ fu! GotoModule()
   call GotoModuleFileInPaths( getline('.') )
 endf
 
-fu! SwitchCPANWindowMode()
-    if g:cpan_win_mode == g:CPAN.Mode.Installed 
-      let g:cpan_win_mode = g:CPAN.Mode.All
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      let g:cpan_win_mode = g:CPAN.Mode.Installed
+
+let s:CPANWindow = { 'buf_nr' : -1 }
+
+fu! s:CPANWindow.open(wtype)
+  if !bufexists( self.buf_nr )
+    call self.new_window(a:wtype)
+    call self.init_buffer()
+
+    cal PrepareInstalledCPANModuleCache()
+    call self.render_result( g:cpan_installed_pkgs )
+    autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
+    autocmd BufWinLeave <buffer>         call s:CPANWindow.close()
+    call self.init_mapping()
+    call InitSyntax()
+    call self.refresh_buffer_name()
+    let self.buf_nr = bufnr('%')
+    call cursor( 1, 1 )
+    startinsert
+  elseif bufwinnr(self.buf_nr) == -1
+    let g:cpan_win_type = a:wtype
+    if g:cpan_win_type == 'v'
+      exec g:cpan_win_width . 'vs'
+    else
+      exec g:cpan_win_height . 'split'
     endif
-    call RefreshBufferName()
-    call SearchCPANModule()
-    call cursor( 1, col('$') )
+    execute self.buf_nr . 'buffer'
+    call self.refresh_buffer_name()
+    startinsert
+    call cursor( 1 , col('$')  )
+  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
+    execute bufwinnr(self.buf_nr) . 'wincmd w'
+  endif
 endf
 
-fu! InitMapping()
+fu! s:CPANWindow.new_window(wtype)
+    let g:cpan_win_type = a:wtype
+    if g:cpan_win_type == 'v'
+      exec g:cpan_win_width . 'vnew'
+    else
+      exec g:cpan_win_height . 'new'
+    endif
+endf
+
+fu! s:CPANWindow.init_buffer()
+    setlocal noswapfile
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal nobuflisted
+    setlocal nowrap
+    setlocal cursorline
+    setlocal nonumber
+    setlocal fdc=0
+    setfiletype cpanwindow
+endf
+
+fu! s:CPANWindow.init_mapping()
     imap <buffer>     <Enter> <ESC>j<Enter>
     imap <buffer>     <C-t>   <ESC>jt
     imap <buffer>     <C-a>   <Esc>0i
     imap <buffer>     <C-e>   <Esc>A
     imap <buffer>     <C-b>   <Esc>i
     imap <buffer>     <C-f>   <Esc>a
-    imap <silent> <buffer>     <Tab>   <Esc>:call SwitchCPANWindowMode()<CR>
+    imap <silent> <buffer>     <Tab>   <Esc>:call s:CPANWindow.switch_mode()<CR>
 
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
     nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
@@ -235,61 +279,69 @@ fu! InitMapping()
     nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 endf
 
-fu! InitSyntax()
+fu! s:CPANWindow.init_syntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+    
     endif
 endf
 
-let g:CPANWindow = { 'buf_nr' : -1 }
-
-fu! g:CPANWindow.open(wtype)
-  if !bufexists( self.buf_nr )
-    let g:cpan_win_type = a:wtype
-    if g:cpan_win_type == 'v'
-      exec g:cpan_win_width . 'vnew'
-    else
-      exec g:cpan_win_height . 'new'
+fu! s:CPANWindow.switch_mode()
+    if g:cpan_win_mode == g:CPAN.Mode.Installed 
+      let g:cpan_win_mode = g:CPAN.Mode.All
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      let g:cpan_win_mode = g:CPAN.Mode.Installed
     endif
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal nowrap
-    setlocal cursorline
-    setlocal nonumber
-    setlocal fdc=0
-    setfiletype cpanwindow
-    cal PrepareInstalledCPANModuleCache()
-    call RenderResult( g:cpan_installed_pkgs )
-    autocmd CursorMovedI <buffer>        call SearchCPANModule()
-    autocmd BufWinLeave <buffer>         call g:CPANWindow.close()
-    call InitMapping()
-    call InitSyntax()
-    call RefreshBufferName()
-    let self.buf_nr = bufnr('%')
-    call cursor( 1, 1 )
-    startinsert
-  elseif bufwinnr(self.buf_nr) == -1
-    let g:cpan_win_type = a:wtype
-    if g:cpan_win_type == 'v'
-      exec g:cpan_win_width . 'vs'
-    else
-      exec g:cpan_win_height . 'split'
-    endif
-    execute self.buf_nr . 'buffer'
-    call RefreshBufferName()
-    startinsert
-    call cursor( 1 , col('$')  )
-  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
-    execute bufwinnr(self.buf_nr) . 'wincmd w'
-  endif
+    call self.refresh_buffer_name()
+    call self.update_search()
+    call cursor( 1, col('$') )
 endf
 
-fu! g:CPANWindow.close()
+fu! s:CPANWindow.refresh_buffer_name()
+    if g:cpan_win_mode == g:CPAN.Mode.Installed 
+      silent file CPAN\ (Installed)
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      silent file CPAN\ (All)
+    endif
+endf
+
+fu! s:CPANWindow.close()
   silent 0f
 endf
 
+fu! s:CPANWindow.update_search()
+    let pattern = getline('.')
+
+    let pkgs = []
+    if g:cpan_win_mode == g:CPAN.Mode.Installed
+      cal PrepareInstalledCPANModuleCache()
+      let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      cal PrepareCPANModuleCache()
+      let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    endif
+
+    if len(pkgs) > g:cpan_max_result 
+      let pkgs = remove( pkgs , 0 , g:cpan_max_result )
+    endif
+
+    let old = getpos('.')
+    silent 2,$delete _
+    call self.render_result( pkgs )
+    call setpos('.',old)
+    startinsert
+endfunc
+
+fu! s:CPANWindow.render_result(pkgs)
+    let @o = join( a:pkgs , "\n" )
+    silent put o
+endf
+
+com! OpenCPANWindowS    :call s:CPANWindow.open('s')
+com! OpenCPANWindowVS   :call s:CPANWindow.open('v')
+
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 fu! ClosePerldocWindow()
   if g:cpan_win_type == 'v'
     exec 'vertical resize ' . g:cpan_win_width
@@ -319,43 +371,6 @@ fu! OpenPerldocWindow(module)
     resize 50
     vertical resize 78
     autocmd BufWinLeave <buffer> call ClosePerldocWindow()
-endf
-
-
-fu! RefreshBufferName()
-    if g:cpan_win_mode == g:CPAN.Mode.Installed 
-      silent file CPAN\ (Installed)
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      silent file CPAN\ (All)
-    endif
-endf
-
-fu! SearchCPANModule()
-    let pattern = getline('.')
-
-    let pkgs = []
-    if g:cpan_win_mode == g:CPAN.Mode.Installed
-      cal PrepareInstalledCPANModuleCache()
-      let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      cal PrepareCPANModuleCache()
-      let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
-    endif
-
-    if len(pkgs) > g:cpan_max_result 
-      let pkgs = remove( pkgs , 0 , g:cpan_max_result )
-    endif
-
-    let old = getpos('.')
-    silent 2,$delete _
-    call RenderResult( pkgs )
-    call setpos('.',old)
-    startinsert
-endfunc
-
-fu! RenderResult(pkgs)
-    let @o = join( a:pkgs , "\n" )
-    silent put o
 endf
 
 " Function: FindPerlPackageFiles
@@ -491,8 +506,8 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-x><C-m>        :call g:CPANWindow.open('s')<CR>
-nnoremap <C-x><C-v>        :call g:CPANWindow.open('v')<CR>
+nnoremap <C-x><C-m>        :OpenCPANWindowS<CR>
+nnoremap <C-x><C-v>        :OpenCPANWindowSV<CR>
 nnoremap <leader>fm        :call TabGotoModuleFileFromCursor()<CR>
 
 " for testing...
