@@ -33,7 +33,8 @@
 "   * browser integration
 "
 " Install:
-"   put cpan.vim into your ~/.vim/plugin/
+"
+"   $ make install 
 "
 " Usage:
 "   CPAN Window:
