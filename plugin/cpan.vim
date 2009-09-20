@@ -289,8 +289,8 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <leader>m        :call OpenModuleWindow('s')<CR>
-nnoremap <leader>vm   :call OpenModuleWindow('v')<CR>
+nnoremap <leader>ms        :call OpenModuleWindow('s')<CR>
+nnoremap <leader>mv   :call OpenModuleWindow('v')<CR>
 nnoremap <leader>fm  :call FindModuleByCWord()<CR>
 
 " for testing...
