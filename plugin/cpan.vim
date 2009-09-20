@@ -1,8 +1,10 @@
-" vim plugin : cpan.vim
+" cpan.vim
+" Vim plugin for perl hackers
 "
 " vim:fdm=syntax:et:sw=2:
 "
-" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+"
 " This file is free software; you can redistribute it and/or modify it under
 " the terms of the GNU General Public License as published by the Free
 " Software Foundation; either version 2, or (at your option) any later
@@ -17,7 +19,8 @@
 " GNU Emacs; see the file COPYING.  If not, write to the Free Software
 " Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 " USA.
-" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+"
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 "
 " Author: Cornelius <cornelius.howl@gmail.com>
 " Date: Sun Sep 19 10:47:15 2009
@@ -56,7 +59,16 @@
 "       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 "
 " Configuration:
-" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+"
+"        g:cpan_browser_command  :  command for launching browser
+"        g:cpan_win_type         :  v (vertical) or s (horizontal) cpan window
+"        g:cpan_win_width        :  cpan window width (when vertical)
+"        g:cpan_win_height       :  cpan window height (when horizontal)
+"        g:cpan_installed_cache  :  filename of installed package cache
+"        g:cpan_source_cache     :  filename of package source cache
+"        g:cpan_cache_expiry     :  cache expirytime in minutes
+"
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 let g:cpan_browser_command = ''
 let g:cpan_win_type = 'v'   " v (vertical) or s (split)
@@ -68,7 +80,6 @@ let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
 let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
 
-" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if system('uname') =~ 'Darwin'
   let g:cpan_browser_command  = 'open -a Firefox'
