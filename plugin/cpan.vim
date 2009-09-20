@@ -36,27 +36,37 @@
 "   put cpan.vim into your ~/.vim/plugin/
 "
 " Usage:
-"   1. 
+"   CPAN Window:
+"       1. 
 "
-"       type <C-x><C-m> to open cpan window horizontally
-"       type <C-x><C-v> to open cpan window vertically
+"           type <C-x><C-m> to open cpan window horizontally
+"           type <C-x><C-v> to open cpan window vertically
 "
-"   2. type pattern to search cpan modules
+"       2. type pattern to search cpan modules
 "
-"   3. 
-"       - press <enter> to go to the first matched module file.
-"       - press <C-t> to go to the first matched module file in new tab.
-"       - press @ to search module by current pattern in your browser
-"       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
-"   4. <C-n> or <C-p> to select result
+"       3. 
+"           - press <enter> to go to the first matched module file.
+"           - press <C-t> to go to the first matched module file in new tab.
+"           - press @ to search module by current pattern in your browser
+"           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"       4. <C-n> or <C-p> to select result
 "
-"   5. 
-"       - press <enter> to go to the module file.
-"       - press t to go to the module file in new tab
-"       - press @ to see the module documentation in your browser
-"       - press ! to see the module documentation by perldoc command
-"       - press $ to see the module documentation inside vim window
-"       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"       5. 
+"           - press <enter> to go to the module file.
+"           - press t to go to the module file in new tab
+"           - press @ to see the module documentation in your browser
+"           - press ! to see the module documentation by perldoc command
+"           - press $ to see the module documentation inside vim window
+"           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"
+"   ModuleName Completion:
+"       
+"       in insert mode: <c-x><c-m> for module name completion (installed
+"       module)
+"
+"   Inspect Module File Content:
+"       in normal mode: <leader>fm to open the module under the cursor in new
+"       tab
 "
 " Configuration:
 "
@@ -140,6 +150,12 @@ fu! TabGotoModuleFileInPaths(mod)
       break
     endif
   endfor
+endf
+
+fu! TabGotoModuleFileFromCursor()
+  let mod = GetCursorModuleName()
+  echo "Module:" . mod
+  call TabGotoModuleFileInPaths(mod)
 endf
 
 fu! GotoModuleFileInPaths(mod)
@@ -411,7 +427,7 @@ endf
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
 nnoremap <C-x><C-m>        :call OpenCPANWindow('s')<CR>
 nnoremap <C-x><C-v>        :call OpenCPANWindow('v')<CR>
-nnoremap <leader>fm        :call FindModuleByCWord()<CR>
+nnoremap <leader>fm        :call TabGotoModuleFileFromCursor()<CR>
 
 " for testing...
 " Jifty::Collection
