@@ -50,6 +50,9 @@
 "           - press <C-t> to go to the first matched module file in new tab.
 "           - press @ to search module by current pattern in your browser
 "           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"           - press <Tab> to switch cpan window mode (search all modules or
+"                 installed modules)
+"
 "       4. <C-n> or <C-p> to select result
 "
 "       5. 
@@ -78,10 +81,23 @@
 "        g:cpan_installed_cache  :  filename of installed package cache
 "        g:cpan_source_cache     :  filename of package source cache
 "        g:cpan_cache_expiry     :  cache expirytime in minutes
+"        g:cpan_max_result       :  max search result
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+
+unlet g:loaded_cpan
+if exists('g:loaded_cpan') || v:version < 701
+  finish
+endif
+let g:loaded_cpan = 0100  "Version
+
+let g:CPAN = { }
+let g:CPAN.Mode = { 'Installed': 1 , 'All': 2 }
+
+
 let g:cpan_browser_command = ''
+let g:cpan_win_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'v'   " v (vertical) or s (split)
 let g:cpan_win_width = 30
 let g:cpan_win_height = 10
@@ -90,6 +106,7 @@ let g:cpan_source_cache     = expand('~/.vim-cpan-source')
 let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
 let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
+let g:cpan_max_result = 50
 
 
 if system('uname') =~ 'Darwin'
@@ -182,6 +199,17 @@ fu! GotoModule()
   call GotoModuleFileInPaths( getline('.') )
 endf
 
+fu! SwitchCPANWindowMode()
+    if g:cpan_win_mode == g:CPAN.Mode.Installed 
+      let g:cpan_win_mode = g:CPAN.Mode.All
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      let g:cpan_win_mode = g:CPAN.Mode.Installed
+    endif
+    call RefreshBufferName()
+    call SearchCPANModule()
+    call cursor( 1, col('$') )
+endf
+
 fu! InitMapping()
     imap <buffer>     <Enter> <ESC>j<Enter>
     imap <buffer>     <C-t>   <ESC>jt
@@ -189,6 +217,7 @@ fu! InitMapping()
     imap <buffer>     <C-e>   <Esc>A
     imap <buffer>     <C-b>   <Esc>i
     imap <buffer>     <C-f>   <Esc>a
+    imap <silent> <buffer>     <Tab>   <Esc>:call SwitchCPANWindowMode()<CR>
 
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
     nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
@@ -266,21 +295,43 @@ fu! OpenCPANWindow(wtype)
     setfiletype cpanwindow
     cal PrepareInstalledCPANModuleCache()
     call RenderResult( g:cpan_installed_pkgs )
-    autocmd CursorMovedI <buffer>        
-        \ call SearchCPANModule()
-    autocmd BufWinLeave <buffer> call CloseCPANWindow()
+    autocmd CursorMovedI <buffer>        call SearchCPANModule()
+    autocmd BufWinLeave <buffer>         call CloseCPANWindow()
+
     "execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
-    call cursor( 1, 1 )
+    
     call InitMapping()
     call InitSyntax()
-    silent file CPAN
+    call RefreshBufferName()
+
+    call cursor( 1, 1 )
     startinsert
+endf
+
+fu! RefreshBufferName()
+    if g:cpan_win_mode == g:CPAN.Mode.Installed 
+      silent file CPAN\ (Installed)
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      silent file CPAN\ (All)
+    endif
 endf
 
 fu! SearchCPANModule()
     let pattern = getline('.')
-    cal PrepareInstalledCPANModuleCache()
-    let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
+
+    let pkgs = []
+    if g:cpan_win_mode == g:CPAN.Mode.Installed
+      cal PrepareInstalledCPANModuleCache()
+      let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    elseif g:cpan_win_mode == g:CPAN.Mode.All
+      cal PrepareCPANModuleCache()
+      let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    endif
+
+    if len(pkgs) > g:cpan_max_result 
+      let pkgs = remove( pkgs , 0 , g:cpan_max_result )
+    endif
+
     let old = getpos('.')
     silent 2,$delete _
     call RenderResult( pkgs )
@@ -341,7 +392,7 @@ endf
 
 fu! PrepareInstalledCPANModuleCache()
     if len( g:cpan_installed_pkgs ) == 0 
-      echo "preparing cpan module list..."
+      echo "preparing installed cpan module list..."
       let g:cpan_installed_pkgs = GetInstalledCPANModuleList()
     endif
 endf
