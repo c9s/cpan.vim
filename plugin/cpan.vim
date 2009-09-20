@@ -195,10 +195,12 @@ fu! OpenPerldocWindow(module)
     setlocal nonumber
     setlocal fdc=0
     setfiletype perldoc
-    set modifiable
+    setlocal modifiable
     exec 'r !perldoc -tT ' . a:module
-    set nomodifiable
+    setlocal nomodifiable
     call cursor(1,1)
+    resize 50
+    vertical resize 78
     nmap <buffer> <ESC> <C-w>q
 endf
 
