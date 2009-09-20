@@ -1,5 +1,5 @@
-" cpan-list.vim
-" vim:fdm=marker:et:sw=2:
+" cpan.vim
+" vim:fdm=syntax:et:sw=2:
 "
 " Author: Cornelius <cornelius.howl@gmail.com>
 " Date: Sun Sep 19 10:47:15 2009
@@ -20,14 +20,27 @@
 " Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 " USA.
 
-let g:mlist_filename = expand('~/.vim-cpan-modules')
+" Install:
+"   put cpan.vim into your ~/.vim/plugin/
+" Usage:
+"
 
-" standard vim function for perl {{{
+
+let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
+let g:cpan_source_cache     = expand('~/.vim-cpan-source')
+let g:cpan_cache_expiry     = 30
+let g:cpan_installed_pkgs = []
+let g:cpan_pkgs = []
+
+fu! GetPerlLibPaths()
+  let out = system('perl -e ''print join "\n",@INC''')
+  let paths = split( out , "\n" ) 
+  return paths
+endf
 fu! GetCursorModuleName()
   let cw = substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
   return cw
 endf
-
 fu! GetCursorMethodName()
   let cw = expand("<cWORD>")
   let m = substitute( cw , '.\{-}\([a-zA-Z0-9_:]\+\)->\(\w\+\).*$' , '\2' , '' )
@@ -37,17 +50,9 @@ fu! GetCursorMethodName()
     return
   endif
 endf
-
 fu! TranslateModuleName(n)
   return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
 endf
-
-fu! GetPerlLibPaths()
-  let out = system('perl -e ''print join "\n",@INC''')
-  let paths = split( out , "\n" ) 
-  return paths
-endf
-
 fu! TabGotoFile(fullpath,method)
     execute ':tabedit ' . a:fullpath
     if strlen(a:method) > 0
@@ -58,7 +63,6 @@ fu! TabGotoFile(fullpath,method)
     endif
     return 1
 endf
-
 fu! GotoFile(fullpath,method)
     execute ':e ' . a:fullpath
     if strlen(a:method) > 0
@@ -69,12 +73,6 @@ fu! GotoFile(fullpath,method)
     endif
     return 1
 endf
-
-fu! FindModuleByCWord()
-    let mod = GetCursorModuleName()
-    call TabGotoModuleFileInPaths( mod )
-endf
-
 fu! TabGotoModuleFileInPaths(mod)
   let paths = GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
@@ -87,7 +85,6 @@ fu! TabGotoModuleFileInPaths(mod)
     endif
   endfor
 endf
-
 fu! GotoModuleFileInPaths(mod)
   let paths = GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
@@ -101,16 +98,14 @@ fu! GotoModuleFileInPaths(mod)
   endfor
   echomsg "No such module: " . a:mod
 endf
-
-fu! ReadModule()
+fu! GotoModule()
   resize 50
   call GotoModuleFileInPaths( getline('.') )
 endf
-" }}}
-
 fu! InitMapping()
-    inoremap <buffer> <Enter> <ESC>:call SearchCPANModule()<CR>
-    nnoremap <buffer> <Enter> :call ReadModule()<CR>
+    imap <buffer> <Enter> <ESC>j<Enter>
+    nnoremap <buffer> <Enter> :call GotoModule()<CR>
+    nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
     inoremap <buffer> <C-n> <ESC>j
 
     nnoremap <buffer> <C-n> j
@@ -121,16 +116,13 @@ fu! InitMapping()
     nnoremap <buffer> @   :exec '!open -a Firefox http://search.cpan.org/search?query=' . expand('<cWORD>') . '&mode=all'<CR>
     nnoremap <buffer> $   :exec '!perldoc ' . expand('<cWORD>')<CR>
 endf
-
-"string"
 fu! InitSyntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
     endif
 endf
-
 fu! OpenModuleWindow()
-    9new
+    8new
     setlocal noswapfile
     setlocal buftype=nofile
     setlocal bufhidden=hide
@@ -139,32 +131,34 @@ fu! OpenModuleWindow()
     setlocal cursorline
     setlocal nonumber
     setfiletype cpanwindow
-    let g:pkg_cache = GetCPANModuleList()
-    call RenderResult( g:pkg_cache )
+    cal PrepareInstalledCPANModuleCache()
+    call RenderResult( g:cpan_installed_pkgs )
+    autocmd CursorMovedI <buffer>        
+        \ call SearchCPANModule()
+    "execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
     call cursor( 1, 1 )
     call InitMapping()
     call InitSyntax()
     startinsert
 endf
-
 fu! SearchCPANModule()
     let pattern = getline('.')
-    let pkgs = filter( copy( g:pkg_cache ) , 'v:val =~ "' . pattern . '"' )
-
+    cal PrepareInstalledCPANModuleCache()
+    let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
     let old = getpos('.')
     silent 2,$delete _
     call RenderResult( pkgs )
-
     call setpos('.',old)
     startinsert
     call cursor(line("."), col(".") + 1)
 endfunc
-
 fu! RenderResult(pkgs)
     let @o = join( a:pkgs , "\n" )
     silent put o
 endf
 
+" Function: FindPerlPackageFiles
+" Return: package [list]
 fu! FindPerlPackageFiles()
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
@@ -173,58 +167,117 @@ fu! FindPerlPackageFiles()
                 \ . " | sort | uniq " )
     return pkgs
 endf
-
-fu! FindPerlPackages()
+fu! CacheInstalledCPANModules()
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
+    call system( 'find ' . paths . ' -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq " )
-    return pkgs
+                \ . " | sort | uniq > " . g:cpan_installed_cache )
 endf
-
-fu! GetCPANModuleList()
-    let pkgs = [ ]
-    if filereadable( g:mlist_filename )
-        let pkgs = readfile( g:mlist_filename )
-    else
-        echo "caching packages..."
-        let pkgs = FindPerlPackages()
-        call writefile( pkgs , g:mlist_filename )
-        echo "done"
+fu! GetPackageSourceListPath()
+    let paths = [ 
+                \expand('~/.cpanplus/02packages.details.txt.gz'),
+                \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
+                \]
+    for f in paths 
+      if filereadable( f ) 
+        return f
+      endif
+    endfor
+    return
+endf
+fu! ExportCPANSource()
+  let path =  GetPackageSourceListPath()
+  echo "executing zcat: " . path
+  call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
+  echo "done"
+endf
+fu! PrepareCPANModuleCache()
+    if len( g:cpan_pkgs ) == 0 
+      echo "preparing cpan module list..."
+      let g:cpan_pkgs = GetCPANModuleList()
     endif
-    return pkgs
 endf
+fu! PrepareInstalledCPANModuleCache()
+    if len( g:cpan_installed_pkgs ) == 0 
+      echo "preparing cpan module list..."
+      let g:cpan_installed_pkgs = GetInstalledCPANModuleList()
+    endif
+endf
+fu! GetCPANModuleList()
+  " XXX check expiry
+  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
+    call ExportCPANSource()
+  endif
+  return readfile( g:cpan_source_cache )
+endf
+fu! GetInstalledCPANModuleList()
+  if filereadable( g:cpan_installed_cache ) && ! IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry )
+    return readfile( g:cpan_installed_cache )
+  else
+    echo "caching packages..."
+    call CacheInstalledCPANModules()
+    echo "reading cache..."
+    return readfile( g:cpan_installed_cache )
+  endif
+endf
+fu! CompleteInstalledCPANModuleList()
+    cal PrepareInstalledCPANModuleCache()
 
-fu! CompleteCPANModuleList()
-    let pkgs = GetCPANModuleList()
-
-    let start_pos  = CompStartPos()
-    let base = CompBase()
-
+    let start_pos  = GetCompStartPos()
+    let base = GetCompBase()
+    echo "filtering..."
+    " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
     let res = []
-    for pkg in pkgs 
-        if pkg =~ '^' . base
-            call add( res , pkg )
-        endif
+    for p in g:cpan_installed_pkgs 
+      if p =~ '^' . base 
+        call insert( res , p )
+      endif
     endfor
     call complete( start_pos[1]+1 , res )
     return ''
 endf
+fu! CompleteCPANModuleList()
+    if len( g:cpan_pkgs ) == 0 
+      echo "preparing cpan module list..."
+      let g:cpan_pkgs = GetCPANModuleList()
+      echo "done"
+    endif
 
-fu! CompStartPos()
+    let start_pos  = GetCompStartPos()
+    let base = GetCompBase()
+    echo "filtering..."
+    let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
+    call complete( start_pos[1]+1 , res )
+    return ''
+endf
+fu! GetCompStartPos()
     return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
-
-fu! CompBase()
+fu! GetCompBase()
     let col = col('.')
-    let pos = CompStartPos()
+    let pos = GetCompStartPos()
     let line = getline('.')
     let base =  strpart( line , pos[1] , col )
     return base
 endf
 
-inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+" check file expiry
+"    @file:    filename
+"    @expiry:  minute
+fu! IsExpired(file,expiry)
+    let lt = localtime( )
+    let ft = getftime( expand( a:file ) )
+    let dist = lt - ft
+    if dist > a:expiry * 60 
+        return 1
+    else
+        return 0
+    endif
+endf
+
+" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+inoremap <C-x><C-m>  <C-R>=CompleteInstalledCPANModuleList()<CR>
 nnoremap <C-x><C-m>  :call OpenModuleWindow()<CR>
 nnoremap <leader>fm  :call FindModuleByCWord()<CR>
 
