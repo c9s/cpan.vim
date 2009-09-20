@@ -107,6 +107,10 @@ fu! GotoModule()
 endf
 fu! InitMapping()
     imap <buffer> <Enter> <ESC>j<Enter>
+    imap <buffer>     <C-a>   <Esc>0i
+    imap <buffer>     <C-e>   <Esc>A
+    imap <buffer>     <C-b>   <Esc>i
+    imap <buffer>     <C-f>   <Esc>a
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
     nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
     inoremap <buffer> <C-n> <ESC>j
@@ -124,7 +128,8 @@ fu! InitSyntax()
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
     endif
 endf
-fu! OpenModuleWindow()
+fu! OpenModuleWindow(wtype)
+    let g:cpan_win_type = a:wtype
     if g:cpan_win_type == 'v'
       exec g:cpan_win_width . 'vnew'
     else
@@ -157,7 +162,6 @@ fu! SearchCPANModule()
     call RenderResult( pkgs )
     call setpos('.',old)
     startinsert
-    call cursor(line("."), col(".") + 1)
 endfunc
 fu! RenderResult(pkgs)
     let @o = join( a:pkgs , "\n" )
@@ -284,8 +288,9 @@ fu! IsExpired(file,expiry)
 endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-inoremap <C-x><C-m>  <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-x><C-m>  :call OpenModuleWindow()<CR>
+inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
+nnoremap <leader>m        :call OpenModuleWindow('s')<CR>
+nnoremap <leader>vm   :call OpenModuleWindow('v')<CR>
 nnoremap <leader>fm  :call FindModuleByCWord()<CR>
 
 " for testing...
