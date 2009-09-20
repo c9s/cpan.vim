@@ -289,9 +289,9 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <leader>ms        :call OpenModuleWindow('s')<CR>
-nnoremap <leader>mv   :call OpenModuleWindow('v')<CR>
-nnoremap <leader>fm  :call FindModuleByCWord()<CR>
+nnoremap <C-x><C-m>        :call OpenModuleWindow('s')<CR>
+nnoremap <C-x><C-v>        :call OpenModuleWindow('v')<CR>
+nnoremap <leader>fm        :call FindModuleByCWord()<CR>
 
 " for testing...
 " Jifty::Collection
