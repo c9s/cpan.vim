@@ -89,7 +89,7 @@
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 if exists('g:loaded_cpan') || v:version < 701
-  finish
+  "finish
 endif
 let g:loaded_cpan = 0100  "Version
 
