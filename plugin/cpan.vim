@@ -241,6 +241,53 @@ fu! InitSyntax()
     endif
 endf
 
+let g:CPANWindow = { 'buf_nr' : -1 }
+
+fu! g:CPANWindow.open(wtype)
+  if !bufexists( self.buf_nr )
+    let g:cpan_win_type = a:wtype
+    if g:cpan_win_type == 'v'
+      exec g:cpan_win_width . 'vnew'
+    else
+      exec g:cpan_win_height . 'new'
+    endif
+    setlocal noswapfile
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal nobuflisted
+    setlocal nowrap
+    setlocal cursorline
+    setlocal nonumber
+    setlocal fdc=0
+    setfiletype cpanwindow
+    cal PrepareInstalledCPANModuleCache()
+    call RenderResult( g:cpan_installed_pkgs )
+    autocmd CursorMovedI <buffer>        call SearchCPANModule()
+    autocmd BufWinLeave <buffer>         call g:CPANWindow.close()
+    call InitMapping()
+    call InitSyntax()
+    call RefreshBufferName()
+    let self.buf_nr = bufnr('%')
+    call cursor( 1, 1 )
+    startinsert
+  elseif bufwinnr(self.buf_nr) == -1
+    let g:cpan_win_type = a:wtype
+    if g:cpan_win_type == 'v'
+      exec g:cpan_win_width . 'vs'
+    else
+      exec g:cpan_win_height . 'split'
+    endif
+    execute self.buf_nr . 'buffer'
+    call cursor( 1, 1 )
+    startinsert
+  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
+    execute bufwinnr(self.buf_nr) . 'wincmd w'
+  endif
+endf
+
+fu! g:CPANWindow.close()
+  silent 0f
+endf
 
 fu! ClosePerldocWindow()
   if g:cpan_win_type == 'v'
@@ -273,40 +320,6 @@ fu! OpenPerldocWindow(module)
     autocmd BufWinLeave <buffer> call ClosePerldocWindow()
 endf
 
-fu! CloseCPANWindow()
-    silent 0f
-endf
-
-fu! OpenCPANWindow(wtype)
-    let g:cpan_win_type = a:wtype
-    if g:cpan_win_type == 'v'
-      exec g:cpan_win_width . 'vnew'
-    else
-      exec g:cpan_win_height . 'new'
-    endif
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal nowrap
-    setlocal cursorline
-    setlocal nonumber
-    setlocal fdc=0
-    setfiletype cpanwindow
-    cal PrepareInstalledCPANModuleCache()
-    call RenderResult( g:cpan_installed_pkgs )
-    autocmd CursorMovedI <buffer>        call SearchCPANModule()
-    autocmd BufWinLeave <buffer>         call CloseCPANWindow()
-
-    "execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
-    
-    call InitMapping()
-    call InitSyntax()
-    call RefreshBufferName()
-
-    call cursor( 1, 1 )
-    startinsert
-endf
 
 fu! RefreshBufferName()
     if g:cpan_win_mode == g:CPAN.Mode.Installed 
@@ -477,8 +490,8 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-x><C-m>        :call OpenCPANWindow('s')<CR>
-nnoremap <C-x><C-v>        :call OpenCPANWindow('v')<CR>
+nnoremap <C-x><C-m>        :call g:CPANWindow.open('s')<CR>
+nnoremap <C-x><C-v>        :call g:CPANWindow.open('v')<CR>
 nnoremap <leader>fm        :call TabGotoModuleFileFromCursor()<CR>
 
 " for testing...
