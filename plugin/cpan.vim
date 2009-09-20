@@ -33,8 +33,30 @@
 "   put cpan.vim into your ~/.vim/plugin/
 "
 " Usage:
+"   1. 
 "
+"       type <C-x><C-m> to open cpan window horizontally
+"       type <C-x><C-v> to open cpan window vertically
+"
+"   2. type pattern to search cpan modules
+"
+"   3. 
+"       - press <enter> to go to the first matched module file.
+"       - press <C-t> to go to the first matched module file in new tab.
+"       - press @ to search module by current pattern in your browser
+"       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"   4. <C-n> or <C-p> to select result
+"
+"   5. 
+"       - press <enter> to go to the module file.
+"       - press t to go to the module file in new tab
+"       - press @ to see the documentation in your browser
+"       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+"
+" Configuration:
+" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+let g:cpan_browser_command = ''
 let g:cpan_win_type = 'v'   " v (vertical) or s (split)
 let g:cpan_win_width = 30
 let g:cpan_win_height = 10
@@ -43,6 +65,16 @@ let g:cpan_source_cache     = expand('~/.vim-cpan-source')
 let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
 let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
+
+" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if system('uname') =~ 'Darwin'
+  let g:cpan_browser_command  = 'open -a Firefox'
+elseif system('uname') =~ 'Linux'
+  let g:cpan_browser_command  = 'firefox'
+else  " default
+  let g:cpan_browser_command  = 'firefox'
+endif
 
 fu! GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
@@ -121,11 +153,13 @@ fu! GotoModule()
 endf
 
 fu! InitMapping()
-    imap <buffer> <Enter> <ESC>j<Enter>
+    imap <buffer>     <Enter> <ESC>j<Enter>
+    imap <buffer>     <C-t>   <ESC>jt
     imap <buffer>     <C-a>   <Esc>0i
     imap <buffer>     <C-e>   <Esc>A
     imap <buffer>     <C-b>   <Esc>i
     imap <buffer>     <C-f>   <Esc>a
+
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
     nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
     inoremap <buffer> <C-n> <ESC>j
@@ -135,7 +169,9 @@ fu! InitMapping()
     nnoremap <buffer> <ESC> <C-W>q
 
     " http://search.cpan.org/search?query=Data%3A%3ADumper&mode=all&sourceid=Mozilla-search
-    nnoremap <buffer> @   :exec '!open -a Firefox http://search.cpan.org/search?query=' . expand('<cWORD>') . '&mode=all'<CR>
+    inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
+    nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
+
     nnoremap <buffer> $   :exec '!perldoc ' . expand('<cWORD>')<CR>
 endf
 
@@ -159,6 +195,7 @@ fu! OpenModuleWindow(wtype)
     setlocal nowrap
     setlocal cursorline
     setlocal nonumber
+    setlocal fdc=0
     setfiletype cpanwindow
     cal PrepareInstalledCPANModuleCache()
     call RenderResult( g:cpan_installed_pkgs )
