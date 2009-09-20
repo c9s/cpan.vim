@@ -25,10 +25,9 @@
 " Usage:
 "
 
-
 let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
 let g:cpan_source_cache     = expand('~/.vim-cpan-source')
-let g:cpan_cache_expiry     = 30
+let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
 let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
 
