@@ -25,6 +25,9 @@
 " Usage:
 "
 
+let g:cpan_win_type = 'v'   " v (vertical) or s (split)
+let g:cpan_win_width = 30
+let g:cpan_win_height = 10
 let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
 let g:cpan_source_cache     = expand('~/.vim-cpan-source')
 let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
@@ -95,7 +98,11 @@ fu! GotoModuleFileInPaths(mod)
   echomsg "No such module: " . a:mod
 endf
 fu! GotoModule()
-  resize 50
+  if g:cpan_win_type == 'v'
+    vertical resize 98
+  else
+    resize 60
+  endif
   call GotoModuleFileInPaths( getline('.') )
 endf
 fu! InitMapping()
@@ -118,7 +125,11 @@ fu! InitSyntax()
     endif
 endf
 fu! OpenModuleWindow()
-    8new
+    if g:cpan_win_type == 'v'
+      exec g:cpan_win_width . 'vnew'
+    else
+      exec g:cpan_win_height . 'new'
+    endif
     setlocal noswapfile
     setlocal buftype=nofile
     setlocal bufhidden=hide
