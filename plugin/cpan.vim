@@ -63,6 +63,9 @@
 "           - press $ to see the module documentation inside vim window
 "           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 "
+"       6. 
+"           <ESC><ESC> to close cpan window
+"
 "   ModuleName Completion:
 "       
 "       in insert mode: <c-x><c-m> for module name completion (installed
@@ -199,6 +202,9 @@ fu! GotoModule()
   call GotoModuleFileInPaths( getline('.') )
 endf
 
+
+" CPAN Window
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 let s:CPANWindow = { 'buf_nr' : -1 }
 
@@ -342,6 +348,10 @@ com! OpenCPANWindowS    :call s:CPANWindow.open('s')
 com! OpenCPANWindowVS   :call s:CPANWindow.open('v')
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+
 fu! ClosePerldocWindow()
   if g:cpan_win_type == 'v'
     exec 'vertical resize ' . g:cpan_win_width
