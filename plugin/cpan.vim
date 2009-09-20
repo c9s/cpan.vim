@@ -191,6 +191,7 @@ fu! ClosePerldocWindow()
   else
     exec 'resize ' . g:cpan_win_height
   endif
+  silent 0f
   close
 endf
 
@@ -206,7 +207,7 @@ fu! OpenPerldocWindow(module)
     setlocal nonumber
     setlocal fdc=0
     setfiletype perldoc
-    file Perldoc
+    silent file Perldoc
     exec 'r !perldoc -tT ' . a:module
     setlocal nomodifiable
     call cursor(1,1)
@@ -244,7 +245,7 @@ fu! OpenCPANWindow(wtype)
     call cursor( 1, 1 )
     call InitMapping()
     call InitSyntax()
-    file CPAN
+    silent file CPAN
     startinsert
 endf
 
