@@ -50,7 +50,9 @@
 "   5. 
 "       - press <enter> to go to the module file.
 "       - press t to go to the module file in new tab
-"       - press @ to see the documentation in your browser
+"       - press @ to see the module documentation in your browser
+"       - press ! to see the module documentation by perldoc command
+"       - press $ to see the module documentation inside vim window
 "       - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 "
 " Configuration:
@@ -172,13 +174,32 @@ fu! InitMapping()
     inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
     nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-    nnoremap <buffer> $   :exec '!perldoc ' . expand('<cWORD>')<CR>
+    nnoremap <buffer> $   :call OpenPerldocWindow( expand('<cWORD>') )<CR>
+    nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 endf
 
 fu! InitSyntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
     endif
+endf
+
+fu! OpenPerldocWindow(module)
+    vnew
+    setlocal noswapfile
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal nobuflisted
+    setlocal nowrap
+    setlocal cursorline
+    setlocal nonumber
+    setlocal fdc=0
+    setfiletype perldoc
+    set modifiable
+    exec 'r !perldoc -tT ' . a:module
+    set nomodifiable
+    call cursor(1,1)
+    nmap <buffer> <ESC> <C-w>q
 endf
 
 fu! OpenModuleWindow(wtype)
