@@ -184,8 +184,19 @@ fu! InitSyntax()
     endif
 endf
 
+
+fu! ClosePerldocWindow()
+  if g:cpan_win_type == 'v'
+    exec 'vertical resize ' . g:cpan_win_width
+  else
+    exec 'resize ' . g:cpan_win_height
+  endif
+  close
+endf
+
 fu! OpenPerldocWindow(module)
     vnew
+    setlocal modifiable
     setlocal noswapfile
     setlocal buftype=nofile
     setlocal bufhidden=hide
@@ -195,16 +206,20 @@ fu! OpenPerldocWindow(module)
     setlocal nonumber
     setlocal fdc=0
     setfiletype perldoc
-    setlocal modifiable
+    file Perldoc
     exec 'r !perldoc -tT ' . a:module
     setlocal nomodifiable
     call cursor(1,1)
     resize 50
     vertical resize 78
-    nmap <buffer> <ESC> <C-w>q
+    autocmd BufWinLeave <buffer> call ClosePerldocWindow()
 endf
 
-fu! OpenModuleWindow(wtype)
+fu! CloseCPANWindow()
+    silent 0f
+endf
+
+fu! OpenCPANWindow(wtype)
     let g:cpan_win_type = a:wtype
     if g:cpan_win_type == 'v'
       exec g:cpan_win_width . 'vnew'
@@ -224,10 +239,12 @@ fu! OpenModuleWindow(wtype)
     call RenderResult( g:cpan_installed_pkgs )
     autocmd CursorMovedI <buffer>        
         \ call SearchCPANModule()
+    autocmd BufWinLeave <buffer> call CloseCPANWindow()
     "execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
     call cursor( 1, 1 )
     call InitMapping()
     call InitSyntax()
+    file CPAN
     startinsert
 endf
 
@@ -380,8 +397,8 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-x><C-m>        :call OpenModuleWindow('s')<CR>
-nnoremap <C-x><C-v>        :call OpenModuleWindow('v')<CR>
+nnoremap <C-x><C-m>        :call OpenCPANWindow('s')<CR>
+nnoremap <C-x><C-v>        :call OpenCPANWindow('v')<CR>
 nnoremap <leader>fm        :call FindModuleByCWord()<CR>
 
 " for testing...
