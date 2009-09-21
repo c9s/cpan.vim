@@ -466,7 +466,7 @@ endf
 fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    echo "finding packages from @INC ..."
+    echo "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
     call system( 'find ' . paths . ' -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
