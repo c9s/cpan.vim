@@ -399,9 +399,7 @@ fu! ClosePerldocWindow()
 endf
 
 fu! InstallCPANModule()
-    let m = GetCursorModuleName()
-	" echo "Installing CPAN Module: " . m . "\n"
-	exec '!' . g:cpan_install_command . ' ' . m 
+	exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
 endf
 
 
