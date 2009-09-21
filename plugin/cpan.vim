@@ -89,6 +89,7 @@
 "        g:cpan_cache_expiry     : cache expirytime in minutes
 "        g:cpan_max_result       : max search result
 "        g:cpan_install_command  : command for installing cpan modules
+"        g:cpan_user_defined_sources : user-defined package source paths
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -114,6 +115,7 @@ let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
 let g:cpan_curlib_pkgs = []
 let g:cpan_max_result = 50
+let g:cpan_user_defined_sources = []
 
 if system('uname') =~ 'Darwin'
   let g:cpan_browser_command  = 'open -a Firefox'
@@ -298,9 +300,7 @@ endf
 
 fu! s:CPANWindow.init_syntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-    
     endif
 endf
 
@@ -421,6 +421,7 @@ fu! GetPackageSourceListPath()
                 \expand('~/.cpanplus/02packages.details.txt.gz'),
                 \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
                 \]
+    call insert( paths , g:cpan_user_defined_sources )
     for f in paths 
       if filereadable( f ) 
         return f
@@ -435,14 +436,12 @@ fu! PrepareCPANModuleCache()
       let g:cpan_pkgs = GetCPANModuleList()
     endif
 endf
-
 fu! PrepareInstalledCPANModuleCache()
     if len( g:cpan_installed_pkgs ) == 0 
       echo "preparing installed cpan module list..."
       let g:cpan_installed_pkgs = GetInstalledCPANModuleList()
     endif
 endf
-
 fu! PrepareCurrentLibCPANModuleCache()
     if len( g:cpan_curlib_pkgs ) == 0 
       echo "preparing installed cpan module list..."
@@ -460,7 +459,6 @@ fu! GetCPANModuleList()
   endif
   return readfile( g:cpan_source_cache )
 endf
-
 " Return: installed cpan module list [list]
 fu! GetInstalledCPANModuleList()
   if filereadable( g:cpan_installed_cache ) && ! IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry )
@@ -476,7 +474,6 @@ fu! GetInstalledCPANModuleList()
     return readfile( g:cpan_installed_cache )
   endif
 endf
-
 " Return: current lib/ cpan module list [list]
 fu! GetCurrentLibCPANModuleList()
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
