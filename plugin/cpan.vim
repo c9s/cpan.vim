@@ -40,8 +40,8 @@
 "   CPAN Window:
 "       1. 
 "
-"           type <C-x><C-m> to open cpan window horizontally
-"           type <C-x><C-v> to open cpan window vertically
+"           type <C-c><C-m> to open cpan window horizontally
+"           type <C-c><C-v> to open cpan window vertically
 "
 "       2. type pattern to search cpan modules
 "
@@ -61,6 +61,7 @@
 "           - press @ to see the module documentation in your browser
 "           - press ! to see the module documentation by perldoc command
 "           - press $ to see the module documentation inside vim window
+"           - press I to install the module
 "           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 "
 "       6. 
@@ -68,11 +69,11 @@
 "
 "   ModuleName Completion:
 "       
-"       in insert mode: <c-x><c-m> for module name completion (installed
+"       in insert mode: <Ctrl-x><Ctrl-m> for module name completion (installed
 "       module)
 "
 "   Inspect Module File Content:
-"       in normal mode: <leader>fm to open the module under the cursor in new
+"       in normal mode: <Ctrl-c>g to open the module under the cursor in new
 "       tab
 "
 " Configuration:
@@ -81,12 +82,13 @@
 "        g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
 "        g:cpan_win_width        : cpan window width (when vertical)
 "        g:cpan_win_height       : cpan window height (when horizontal)
-"        g:cpan_win_mode         : default cpan window mode (search installed
-"                                     modules or all modules)
+"        g:cpan_win_mode         : default cpan window mode 
+"                             (search installed modules or all modules or currentlib ./lib)
 "        g:cpan_installed_cache  : filename of installed package cache
 "        g:cpan_source_cache     : filename of package source cache
 "        g:cpan_cache_expiry     : cache expirytime in minutes
 "        g:cpan_max_result       : max search result
+"        g:cpan_install_command  : command for installing cpan modules
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -99,7 +101,7 @@ let g:loaded_cpan = 0100  "Version
 let g:CPAN = { }
 let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
-let g:cpan_install_command = 'cpanp i'
+let g:cpan_install_command = ''
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'v'   " v (vertical) or s (split)
@@ -113,13 +115,18 @@ let g:cpan_pkgs = []
 let g:cpan_curlib_pkgs = []
 let g:cpan_max_result = 50
 
-
 if system('uname') =~ 'Darwin'
   let g:cpan_browser_command  = 'open -a Firefox'
 elseif system('uname') =~ 'Linux'
   let g:cpan_browser_command  = 'firefox'
 else  " default
   let g:cpan_browser_command  = 'firefox'
+endif
+
+if executable('cpanp')
+  let g:cpan_install_command = 'cpanp i'
+elseif executable('cpan')
+  let g:cpan_install_command = 'cpan'
 endif
 
 fu! GetPerlLibPaths()
@@ -548,9 +555,9 @@ endf
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-x><C-m>        :OpenCPANWindowS<CR>
-nnoremap <C-x><C-v>        :OpenCPANWindowSV<CR>
-nnoremap <leader>fm        :call TabGotoModuleFileFromCursor()<CR>
+nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
+nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
+nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 
 " for testing...
 " Jifty::Collection
