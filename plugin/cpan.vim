@@ -148,6 +148,7 @@ fu! GetCursorMethodName()
   return
 endf
 
+" translate module name to file path
 fu! TranslateModuleName(n)
   return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
 endf
@@ -185,9 +186,7 @@ fu! TabGotoModuleFileInPaths(mod)
 endf
 
 fu! TabGotoModuleFileFromCursor()
-  let mod = GetCursorModuleName()
-  echo "Module:" . mod
-  call TabGotoModuleFileInPaths(mod)
+  call TabGotoModuleFileInPaths( GetCursorModuleName() )
 endf
 
 fu! GotoModuleFileInPaths(mod)
