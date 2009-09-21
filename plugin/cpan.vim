@@ -79,6 +79,12 @@
 "   Pod Helper:
 "       auto insert function pod: press <C-c><C-p>f on function name (normal mode)
 "
+" Commands:
+"
+"   ReloadModuleCache           
+"   ReloadInstalledModuleCache 
+"   ReloadCurrentLibModuleCache 
+"
 " Configuration:
 "
 "        g:cpan_browser_command  : command for launching browser
