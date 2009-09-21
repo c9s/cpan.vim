@@ -97,7 +97,7 @@ endif
 let g:loaded_cpan = 0100  "Version
 
 let g:CPAN = { }
-let g:CPAN.Mode = { 'Installed': 1 , 'All': 2 }
+let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
@@ -109,6 +109,7 @@ let g:cpan_source_cache     = expand('~/.vim-cpan-source')
 let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
 let g:cpan_installed_pkgs = []
 let g:cpan_pkgs = []
+let g:cpan_curlib_pkgs = []
 let g:cpan_max_result = 50
 
 
@@ -267,7 +268,7 @@ fu! s:CPANWindow.init_mapping()
     imap <buffer>     <C-e>   <Esc>A
     imap <buffer>     <C-b>   <Esc>i
     imap <buffer>     <C-f>   <Esc>a
-    imap <silent> <buffer>     <Tab>   <Esc>:call s:CPANWindow.switch_mode()<CR>
+    imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
 
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
     nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
@@ -294,10 +295,9 @@ fu! s:CPANWindow.init_syntax()
 endf
 
 fu! s:CPANWindow.switch_mode()
-    if g:cpan_win_mode == g:CPAN.Mode.Installed 
-      let g:cpan_win_mode = g:CPAN.Mode.All
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      let g:cpan_win_mode = g:CPAN.Mode.Installed
+    let g:cpan_win_mode = g:cpan_win_mode + 1
+    if g:cpan_win_mode == 4
+      let g:cpan_win_mode = 1
     endif
     call self.refresh_buffer_name()
     call self.update_search()
@@ -309,6 +309,8 @@ fu! s:CPANWindow.refresh_buffer_name()
       silent file CPAN\ (Installed)
     elseif g:cpan_win_mode == g:CPAN.Mode.All
       silent file CPAN\ (All)
+    elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
+      silent file CPAN\ (CurrentLib)
     endif
 endf
 
@@ -326,6 +328,9 @@ fu! s:CPANWindow.update_search()
     elseif g:cpan_win_mode == g:CPAN.Mode.All
       cal PrepareCPANModuleCache()
       let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
+      cal PrepareCurrentLibCPANModuleCache()
+      let pkgs = filter( copy( g:cpan_curlib_pkgs ) , 'v:val =~ "' . pattern . '"' )
     endif
 
     if len(pkgs) > g:cpan_max_result 
@@ -344,13 +349,11 @@ fu! s:CPANWindow.render_result(pkgs)
     silent put o
 endf
 
-com! OpenCPANWindowS    :call s:CPANWindow.open('s')
-com! OpenCPANWindowVS   :call s:CPANWindow.open('v')
+com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
+com! OpenCPANWindowS        :call s:CPANWindow.open('s')
+com! OpenCPANWindowVS       :call s:CPANWindow.open('v')
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
-
 
 fu! ClosePerldocWindow()
   if g:cpan_win_type == 'v'
@@ -392,6 +395,13 @@ fu! FindPerlPackageFiles()
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq " )
     return pkgs
+endf
+
+fu! CacheCurrentLibCPANModules(filepath)
+    call system( 'find lib -type f -iname *.pm ' 
+                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+                \ . " | perl -pe 's/^package (.*?);/\$1/' "
+                \ . " | sort | uniq > " . a:filepath )
 endf
 
 fu! CacheInstalledCPANModules()
@@ -436,6 +446,13 @@ fu! PrepareInstalledCPANModuleCache()
     endif
 endf
 
+fu! PrepareCurrentLibCPANModuleCache()
+    if len( g:cpan_curlib_pkgs ) == 0 
+      echo "preparing installed cpan module list..."
+      let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList()
+    endif
+endf
+
 " Return: cpan module list [list]
 fu! GetCPANModuleList()
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
@@ -453,6 +470,18 @@ fu! GetInstalledCPANModuleList()
     call CacheInstalledCPANModules()
     echo "reading cache..."
     return readfile( g:cpan_installed_cache )
+  endif
+endf
+
+fu! GetCurrentLibCPANModuleList()
+  let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
+  if filereadable( cpan_curlib_cache ) && ! IsExpired( cpan_curlib_cache , g:cpan_cache_expiry )
+    return readfile( cpan_curlib_cache )
+  else
+    echo "caching packages..."
+    call CacheCurrentLibCPANModules( cpan_curlib_cache )
+    echo "reading cache..."
+    return readfile( cpan_curlib_cache )
   endif
 endf
 
