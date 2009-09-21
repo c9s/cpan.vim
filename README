@@ -40,8 +40,8 @@
    CPAN Window:
        1. 
 
-           type <C-x><C-m> to open cpan window horizontally
-           type <C-x><C-v> to open cpan window vertically
+           type <C-c><C-m> to open cpan window horizontally
+           type <C-c><C-v> to open cpan window vertically
 
        2. type pattern to search cpan modules
 
@@ -61,6 +61,7 @@
            - press @ to see the module documentation in your browser
            - press ! to see the module documentation by perldoc command
            - press $ to see the module documentation inside vim window
+           - press I to install the module
            - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 
        6. 
@@ -68,12 +69,15 @@
 
    ModuleName Completion:
        
-       in insert mode: <c-x><c-m> for module name completion (installed
+       in insert mode: <Ctrl-x><Ctrl-m> for module name completion (installed
        module)
 
    Inspect Module File Content:
-       in normal mode: <leader>fm to open the module under the cursor in new
+       in normal mode: <Ctrl-c>g to open the module under the cursor in new
        tab
+
+   Pod Helper:
+       auto insert function pod: press <C-c><C-p>f on function name (normal mode)
 
  Configuration:
 
@@ -81,12 +85,14 @@
         g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
         g:cpan_win_width        : cpan window width (when vertical)
         g:cpan_win_height       : cpan window height (when horizontal)
-        g:cpan_win_mode         : default cpan window mode (search installed
-                                     modules or all modules)
+        g:cpan_win_mode         : default cpan window mode 
+                             (search installed modules or all modules or currentlib ./lib)
         g:cpan_installed_cache  : filename of installed package cache
         g:cpan_source_cache     : filename of package source cache
         g:cpan_cache_expiry     : cache expirytime in minutes
         g:cpan_max_result       : max search result
+        g:cpan_install_command  : command for installing cpan modules
+        g:cpan_user_defined_sources : user-defined package source paths
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 

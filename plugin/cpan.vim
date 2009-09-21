@@ -303,6 +303,7 @@ endf
 fu! s:CPANWindow.init_syntax()
     if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
         "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+        hi Background ctermbg=darkblue
     endif
 endf
 
