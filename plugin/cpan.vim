@@ -366,6 +366,8 @@ com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('s')
 com! OpenCPANWindowSV       :call s:CPANWindow.open('v')
 
+
+
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " 
 " Perldoc Window
@@ -422,7 +424,7 @@ fu! GetPackageSourceListPath()
                 \expand('~/.cpanplus/02packages.details.txt.gz'),
                 \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
                 \]
-    call insert( paths , g:cpan_user_defined_sources )
+    call extend( paths , g:cpan_user_defined_sources )
     for f in paths 
       if filereadable( f ) 
         return f
@@ -434,25 +436,25 @@ endf
 fu! PrepareCPANModuleCache()
     if len( g:cpan_pkgs ) == 0 
       echo "preparing cpan module list..."
-      let g:cpan_pkgs = GetCPANModuleList()
+      let g:cpan_pkgs = GetCPANModuleList(0)
     endif
 endf
 fu! PrepareInstalledCPANModuleCache()
     if len( g:cpan_installed_pkgs ) == 0 
       echo "preparing installed cpan module list..."
-      let g:cpan_installed_pkgs = GetInstalledCPANModuleList()
+      let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
     endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
     if len( g:cpan_curlib_pkgs ) == 0 
       echo "preparing installed cpan module list..."
-      let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList()
+      let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
     endif
 endf
 
 " Return: cpan module list [list]
-fu! GetCPANModuleList()
-  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
+fu! GetCPANModuleList(force)
+  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
     let path =  GetPackageSourceListPath()
     echo "executing zcat: " . path
     call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
@@ -461,34 +463,32 @@ fu! GetCPANModuleList()
   return readfile( g:cpan_source_cache )
 endf
 " Return: installed cpan module list [list]
-fu! GetInstalledCPANModuleList()
-  if filereadable( g:cpan_installed_cache ) && ! IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry )
-    return readfile( g:cpan_installed_cache )
-  else
-    echo "caching packages..."
+fu! GetInstalledCPANModuleList(force)
+  if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+    echo "finding packages from @INC ..."
     call system( 'find ' . paths . ' -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . g:cpan_installed_cache )
-    echo "reading cache..."
+    echo "preparing..."
     return readfile( g:cpan_installed_cache )
   endif
+  return readfile( g:cpan_installed_cache )
 endf
 " Return: current lib/ cpan module list [list]
-fu! GetCurrentLibCPANModuleList()
+fu! GetCurrentLibCPANModuleList(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
-  if filereadable( cpan_curlib_cache ) && ! IsExpired( cpan_curlib_cache , g:cpan_cache_expiry )
-    return readfile( cpan_curlib_cache )
-  else
-    echo "caching packages..."
+  if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
+    echo "finding packages... from lib/"
     call system( 'find lib -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . a:filepath )
-    echo "reading cache..."
+    echo "preparing..."
     return readfile( cpan_curlib_cache )
   endif
+  return readfile( cpan_curlib_cache )
 endf
 
 
@@ -541,7 +541,7 @@ endf
 fu! CompleteCPANModuleList()
     if len( g:cpan_pkgs ) == 0 
       echo "preparing cpan module list..."
-      let g:cpan_pkgs = GetCPANModuleList()
+      let g:cpan_pkgs = GetCPANModuleList(0)
       echo "done"
     endif
 
@@ -586,6 +586,10 @@ nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
+
+com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
+com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)
+com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(1)
 
 " for testing...
 " Jifty::Collection
