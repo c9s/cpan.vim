@@ -33,7 +33,8 @@
    * browser integration
 
  Install:
-   put cpan.vim into your ~/.vim/plugin/
+
+   $ make install 
 
  Usage:
    CPAN Window:
@@ -49,6 +50,9 @@
            - press <C-t> to go to the first matched module file in new tab.
            - press @ to search module by current pattern in your browser
            - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+           - press <Tab> to switch cpan window mode (search all modules or
+                 installed modules)
+
        4. <C-n> or <C-p> to select result
 
        5. 
@@ -58,6 +62,9 @@
            - press ! to see the module documentation by perldoc command
            - press $ to see the module documentation inside vim window
            - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
+
+       6. 
+           <ESC><ESC> to close cpan window
 
    ModuleName Completion:
        
@@ -70,13 +77,16 @@
 
  Configuration:
 
-        g:cpan_browser_command  :  command for launching browser
-        g:cpan_win_type         :  v (vertical) or s (horizontal) cpan window
-        g:cpan_win_width        :  cpan window width (when vertical)
-        g:cpan_win_height       :  cpan window height (when horizontal)
-        g:cpan_installed_cache  :  filename of installed package cache
-        g:cpan_source_cache     :  filename of package source cache
-        g:cpan_cache_expiry     :  cache expirytime in minutes
+        g:cpan_browser_command  : command for launching browser
+        g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
+        g:cpan_win_width        : cpan window width (when vertical)
+        g:cpan_win_height       : cpan window height (when horizontal)
+        g:cpan_win_mode         : default cpan window mode (search installed
+                                     modules or all modules)
+        g:cpan_installed_cache  : filename of installed package cache
+        g:cpan_source_cache     : filename of package source cache
+        g:cpan_cache_expiry     : cache expirytime in minutes
+        g:cpan_max_result       : max search result
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
