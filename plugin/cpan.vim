@@ -227,7 +227,7 @@ fu! s:CPANWindow.open(wtype)
     autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
     autocmd BufWinLeave <buffer>         call s:CPANWindow.close()
     call self.init_mapping()
-    call InitSyntax()
+    call self.init_syntax()
     call self.refresh_buffer_name()
     let self.buf_nr = bufnr('%')
     call cursor( 1, 1 )
@@ -361,20 +361,12 @@ endf
 
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('s')
-com! OpenCPANWindowVS       :call s:CPANWindow.open('v')
+com! OpenCPANWindowSV       :call s:CPANWindow.open('v')
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-fu! ClosePerldocWindow()
-  if g:cpan_win_type == 'v'
-    exec 'vertical resize ' . g:cpan_win_width
-  else
-    exec 'resize ' . g:cpan_win_height
-  endif
-  silent 0f
-  close
-endf
-
+" 
+" Perldoc Window
+"
 fu! OpenPerldocWindow(module)
     vnew
     setlocal modifiable
@@ -392,9 +384,20 @@ fu! OpenPerldocWindow(module)
     setlocal nomodifiable
     call cursor(1,1)
     resize 50
-    vertical resize 78
+    vertical resize 82
     autocmd BufWinLeave <buffer> call ClosePerldocWindow()
 endf
+
+fu! ClosePerldocWindow()
+  if g:cpan_win_type == 'v'
+    exec 'vertical resize ' . g:cpan_win_width
+  else
+    exec 'resize ' . g:cpan_win_height
+  endif
+  silent 0f
+  close
+endf
+
 
 " Function: FindPerlPackageFiles
 " Return: package [list]
@@ -405,21 +408,6 @@ fu! FindPerlPackageFiles()
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq " )
     return pkgs
-endf
-
-fu! CacheCurrentLibCPANModules(filepath)
-    call system( 'find lib -type f -iname *.pm ' 
-                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-                \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . a:filepath )
-endf
-
-fu! CacheInstalledCPANModules()
-    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    call system( 'find ' . paths . ' -type f -iname *.pm ' 
-                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-                \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . g:cpan_installed_cache )
 endf
 
 fu! GetPackageSourceListPath()
@@ -477,7 +465,11 @@ fu! GetInstalledCPANModuleList()
     return readfile( g:cpan_installed_cache )
   else
     echo "caching packages..."
-    call CacheInstalledCPANModules()
+    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+    call system( 'find ' . paths . ' -type f -iname *.pm ' 
+                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+                \ . " | perl -pe 's/^package (.*?);/\$1/' "
+                \ . " | sort | uniq > " . g:cpan_installed_cache )
     echo "reading cache..."
     return readfile( g:cpan_installed_cache )
   endif
@@ -489,7 +481,10 @@ fu! GetCurrentLibCPANModuleList()
     return readfile( cpan_curlib_cache )
   else
     echo "caching packages..."
-    call CacheCurrentLibCPANModules( cpan_curlib_cache )
+    call system( 'find lib -type f -iname *.pm ' 
+                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+                \ . " | perl -pe 's/^package (.*?);/\$1/' "
+                \ . " | sort | uniq > " . a:filepath )
     echo "reading cache..."
     return readfile( cpan_curlib_cache )
   endif
