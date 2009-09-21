@@ -76,6 +76,9 @@
 "       in normal mode: <Ctrl-c>g to open the module under the cursor in new
 "       tab
 "
+"   Pod Helper:
+"       auto insert function pod: press <C-c><C-p>f on function name (normal mode)
+"
 " Configuration:
 "
 "        g:cpan_browser_command  : command for launching browser
@@ -487,6 +490,32 @@ fu! GetCurrentLibCPANModuleList()
   endif
 endf
 
+
+
+" Function header helper 
+" insert pod template like this:
+" =head2 function 
+"
+"
+"
+" =cut
+" sub test {
+fu! PodHelperFunctionHeader()
+  let subname = substitute( getline('.') , 'sub\s\+\(\w\+\)\s\+.*$' , '\1' , "" )
+  let lines = [ 
+        \ '=head2 ' . subname , 
+        \ '' , 
+        \ '' ,
+        \ '' ,
+        \ '=cut'  ,
+        \ '',
+        \]
+  for text in lines 
+    :call append( line('.') - 1 , text )
+  endfor
+  :call cursor( line('.') - len( lines ) + 2 , 1  )
+endf
+
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 "
 " Completions
@@ -555,6 +584,7 @@ nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
+nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 " for testing...
 " Jifty::Collection
