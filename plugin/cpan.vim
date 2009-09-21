@@ -471,8 +471,7 @@ fu! GetInstalledCPANModuleList(force)
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . g:cpan_installed_cache )
-    echo "preparing..."
-    return readfile( g:cpan_installed_cache )
+    echo "done"
   endif
   return readfile( g:cpan_installed_cache )
 endf
@@ -485,8 +484,7 @@ fu! GetCurrentLibCPANModuleList(force)
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . a:filepath )
-    echo "preparing..."
-    return readfile( cpan_curlib_cache )
+    echo "done"
   endif
   return readfile( cpan_curlib_cache )
 endf
