@@ -77,16 +77,19 @@
 "
 " Configuration:
 "
-"        g:cpan_browser_command  :  command for launching browser
-"        g:cpan_win_type         :  v (vertical) or s (horizontal) cpan window
-"        g:cpan_win_width        :  cpan window width (when vertical)
-"        g:cpan_win_height       :  cpan window height (when horizontal)
-"        g:cpan_installed_cache  :  filename of installed package cache
-"        g:cpan_source_cache     :  filename of package source cache
-"        g:cpan_cache_expiry     :  cache expirytime in minutes
-"        g:cpan_max_result       :  max search result
+"        g:cpan_browser_command  : command for launching browser
+"        g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
+"        g:cpan_win_width        : cpan window width (when vertical)
+"        g:cpan_win_height       : cpan window height (when horizontal)
+"        g:cpan_win_mode         : default cpan window mode (search installed
+"                                     modules or all modules)
+"        g:cpan_installed_cache  : filename of installed package cache
+"        g:cpan_source_cache     : filename of package source cache
+"        g:cpan_cache_expiry     : cache expirytime in minutes
+"        g:cpan_max_result       : max search result
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
 
 if exists('g:loaded_cpan') || v:version < 701
   "finish
@@ -95,7 +98,6 @@ let g:loaded_cpan = 0100  "Version
 
 let g:CPAN = { }
 let g:CPAN.Mode = { 'Installed': 1 , 'All': 2 }
-
 
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
