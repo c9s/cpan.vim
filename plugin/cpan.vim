@@ -97,7 +97,7 @@
 if exists('g:loaded_cpan') || v:version < 701
   "finish
 endif
-let g:loaded_cpan = 0100  "Version
+let g:loaded_cpan = 0200  "Version
 
 let g:CPAN = { }
 let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
