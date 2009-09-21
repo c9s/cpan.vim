@@ -99,6 +99,7 @@ let g:loaded_cpan = 0100  "Version
 let g:CPAN = { }
 let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
+let g:cpan_install_command = 'cpanp i'
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'v'   " v (vertical) or s (split)
@@ -270,20 +271,22 @@ fu! s:CPANWindow.init_mapping()
     imap <buffer>     <C-f>   <Esc>a
     imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
 
-    nnoremap <buffer> <Enter> :call GotoModule()<CR>
-    nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+    " Motion bindings
     inoremap <buffer> <C-n> <ESC>j
-
     nnoremap <buffer> <C-n> j
     nnoremap <buffer> <C-p> k
     nnoremap <buffer> <ESC> <C-W>q
 
-    " http://search.cpan.org/search?query=Data%3A%3ADumper&mode=all&sourceid=Mozilla-search
+    " Module action bindings
     inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
     nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
     nnoremap <buffer> $   :call OpenPerldocWindow( expand('<cWORD>') )<CR>
     nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
+
+    nnoremap <buffer> <Enter> :call GotoModule()<CR>
+    nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+    nnoremap <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
 fu! s:CPANWindow.init_syntax()
