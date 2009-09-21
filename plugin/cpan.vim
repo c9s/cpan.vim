@@ -398,6 +398,12 @@ fu! ClosePerldocWindow()
   close
 endf
 
+fu! InstallCPANModule()
+    let m = GetCursorModuleName()
+	" echo "Installing CPAN Module: " . m . "\n"
+	exec '!' . g:cpan_install_command . ' ' . m 
+endf
+
 
 " Function: FindPerlPackageFiles
 " Return: package [list]
@@ -421,13 +427,6 @@ fu! GetPackageSourceListPath()
       endif
     endfor
     return
-endf
-
-fu! ExportCPANSource()
-  let path =  GetPackageSourceListPath()
-  echo "executing zcat: " . path
-  call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-  echo "done"
 endf
 
 fu! PrepareCPANModuleCache()
@@ -454,7 +453,10 @@ endf
 " Return: cpan module list [list]
 fu! GetCPANModuleList()
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
-    call ExportCPANSource()
+    let path =  GetPackageSourceListPath()
+    echo "executing zcat: " . path
+    call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
+    echo "done"
   endif
   return readfile( g:cpan_source_cache )
 endf
@@ -475,6 +477,7 @@ fu! GetInstalledCPANModuleList()
   endif
 endf
 
+" Return: current lib/ cpan module list [list]
 fu! GetCurrentLibCPANModuleList()
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if filereadable( cpan_curlib_cache ) && ! IsExpired( cpan_curlib_cache , g:cpan_cache_expiry )
@@ -490,6 +493,10 @@ fu! GetCurrentLibCPANModuleList()
   endif
 endf
 
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+"
+" Completions
+"
 fu! CompleteInstalledCPANModuleList()
     cal PrepareInstalledCPANModuleCache()
 
@@ -553,6 +560,7 @@ inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
 nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
+nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 
 " for testing...
 " Jifty::Collection
