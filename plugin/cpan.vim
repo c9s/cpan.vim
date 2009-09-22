@@ -234,8 +234,10 @@ fu! s:CPANWindow.open(wtype)
 
     cal PrepareInstalledCPANModuleCache()
     call self.render_result( g:cpan_installed_pkgs )
+
     autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
-    autocmd BufWinLeave <buffer>         call s:CPANWindow.close()
+    autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
+
     call self.init_mapping()
     call self.init_syntax()
     call self.refresh_buffer_name()
@@ -489,7 +491,7 @@ fu! GetCurrentLibCPANModuleList(force)
     call system( 'find lib -type f -iname *.pm ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . a:filepath )
+                \ . " | sort | uniq > " . cpan_curlib_cache )
     echo "done"
   endif
   return readfile( cpan_curlib_cache )
