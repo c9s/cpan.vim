@@ -473,7 +473,7 @@ fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     echo "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
-    call system( 'find ' . paths . ' -type f -iname *.pm ' 
+    call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . g:cpan_installed_cache )
@@ -486,7 +486,7 @@ fu! GetCurrentLibCPANModuleList(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     echo "finding packages... from lib/"
-    call system( 'find lib -type f -iname *.pm ' 
+    call system( 'find lib -type f -iname "*.pm" ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . a:filepath )
