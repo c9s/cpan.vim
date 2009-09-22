@@ -22,8 +22,10 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 "
-" Author: Cornelius <cornelius.howl@gmail.com>
+" Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
+" Site: http://oulixe.us/
 " Date: Sun Sep 19 10:47:15 2009
+"
 " Keywords: perl , cpan , vim
 "
 " Features:
