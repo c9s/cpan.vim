@@ -489,7 +489,7 @@ fu! GetCurrentLibCPANModuleList(force)
     call system( 'find lib -type f -iname "*.pm" ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . a:filepath )
+                \ . " | sort | uniq > " . cpan_curlib_cache )
     echo "done"
   endif
   return readfile( cpan_curlib_cache )
