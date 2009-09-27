@@ -92,8 +92,8 @@
 "
 "        g:cpan_browser_command  : command for launching browser
 "        g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
-"        g:cpan_win_width        : cpan window width (when vertical)
-"        g:cpan_win_height       : cpan window height (when horizontal)
+"        g:cpan_win_width     
+"        g:cpan_win_height     
 "        g:cpan_win_mode         : default cpan window mode 
 "                             (search installed modules or all modules or currentlib ./lib)
 "        g:cpan_installed_cache  : filename of installed package cache
@@ -117,7 +117,7 @@ let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 let g:cpan_install_command = ''
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
-let g:cpan_win_type = 'v'   " v (vertical) or s (split)
+let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
 let g:cpan_win_width = 30
 let g:cpan_win_height = 10
 let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
@@ -225,54 +225,18 @@ fu! GotoModule()
 endf
 
 
-" CPAN Window
-" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+" ==== Window Manager ===========================================
+let s:WindowManager = { 'buf_nr' : -1 }
 
-let s:CPANWindow = { 'buf_nr' : -1 }
-
-fu! s:CPANWindow.open(wtype)
-  if !bufexists( self.buf_nr )
-    call self.new_window(a:wtype)
-    call self.init_buffer()
-
-    cal PrepareInstalledCPANModuleCache()
-    call self.render_result( g:cpan_installed_pkgs )
-
-    autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
-    autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
-
-    call self.init_mapping()
-    call self.init_syntax()
-    call self.refresh_buffer_name()
+fun! s:WindowManager.split(position,type,size)
+  if ! bufexists( self.buf_nr )
+    if a:type == 'split'
+      let act = 'new'
+    elseif a:type == 'vsplit'
+      let act = 'vnew'
+    endif
+    exec a:position . ' ' . a:size . act
     let self.buf_nr = bufnr('%')
-    call cursor( 1, 1 )
-    startinsert
-  elseif bufwinnr(self.buf_nr) == -1
-    let g:cpan_win_type = a:wtype
-    if g:cpan_win_type == 'v'
-      exec g:cpan_win_width . 'vs'
-    else
-      exec g:cpan_win_height . 'split'
-    endif
-    execute self.buf_nr . 'buffer'
-    call self.refresh_buffer_name()
-    startinsert
-    call cursor( 1 , col('$')  )
-  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
-    execute bufwinnr(self.buf_nr) . 'wincmd w'
-  endif
-endf
-
-fu! s:CPANWindow.new_window(wtype)
-    let g:cpan_win_type = a:wtype
-    if g:cpan_win_type == 'v'
-      exec g:cpan_win_width . 'vnew'
-    else
-      exec g:cpan_win_height . 'new'
-    endif
-endf
-
-fu! s:CPANWindow.init_buffer()
     setlocal noswapfile
     setlocal buftype=nofile
     setlocal bufhidden=hide
@@ -281,7 +245,49 @@ fu! s:CPANWindow.init_buffer()
     setlocal cursorline
     setlocal nonumber
     setlocal fdc=0
+    call self.buffer_init()
+  elseif bufwinnr(self.buf_nr) == -1 
+    exec a:position . ' ' . a:size . a:type
+    execute self.buf_nr . 'buffer'
+    call self.buffer_reload_init()
+  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
+    execute bufwinnr(self.buf_nr) . 'wincmd w'
+  endif
+endf
+
+fun! s:WindowManager.init_buffer()
+
+endf
+" ==== Window Manager ===========================================
+
+
+
+" CPAN Window
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+let s:CPANWindow = copy(s:WindowManager)
+
+fu! s:CPANWindow.buffer_init()
     setfiletype cpanwindow
+    cal PrepareInstalledCPANModuleCache()
+    call self.render_result( g:cpan_installed_pkgs )
+    autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
+    autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
+    call self.init_mapping()
+    call self.init_syntax()
+    call self.refresh_buffer_name()
+    call cursor( 1, 1 )
+    startinsert
+endf
+
+fu! s:CPANWindow.buffer_reload_init()
+    call self.refresh_buffer_name()
+    startinsert
+    call cursor( 1 , col('$')  )
+endf
+
+fu! s:CPANWindow.open(type,size)
+  call self.split('topleft',a:type,a:size)
 endf
 
 fu! s:CPANWindow.init_mapping()
@@ -374,8 +380,8 @@ fu! s:CPANWindow.render_result(pkgs)
 endf
 
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
-com! OpenCPANWindowS        :call s:CPANWindow.open('s')
-com! OpenCPANWindowSV       :call s:CPANWindow.open('v')
+com! OpenCPANWindowS        :call s:CPANWindow.open('split',g:cpan_win_height)
+com! OpenCPANWindowSV       :call s:CPANWindow.open('vsplit',g:cpan_win_width)
 
 
 
@@ -599,6 +605,7 @@ nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)
 com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(1)
+
 
 " for testing...
 " Jifty::Collection
