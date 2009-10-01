@@ -70,6 +70,12 @@
 "       6. 
 "           <ESC><ESC> to close cpan window
 "
+"   Function Search Window:
+"
+"       press <C-c><C-f> to open function search window
+"       <C-n>,<C-p> to select result 
+"       <Enter> to open perldoc window
+"
 "   ModuleName Completion:
 "       
 "       in insert mode: <Ctrl-x><Ctrl-m> for module name completion (installed

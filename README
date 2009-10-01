@@ -1,7 +1,7 @@
  cpan.vim
- Vim plugin for perl hackers
+ Vim plugin for perl hackers {{{
 
- vim:fdm=syntax:et:sw=2:
+ vim:fdm=marker:et:sw=2:
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -22,8 +22,11 @@
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
- Author: Cornelius <cornelius.howl@gmail.com>
+ Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
+ Site: http://oulixe.us/
  Date: Sun Sep 19 10:47:15 2009
+ Screencast:  http://www.youtube.com/watch?v=erF0NWUIbr4  <cpan.vim>
+
  Keywords: perl , cpan , vim
 
  Features:
@@ -67,6 +70,12 @@
        6. 
            <ESC><ESC> to close cpan window
 
+   Function Search Window:
+
+       press <C-c><C-f> to open function search window
+       <C-n>,<C-p> to select result 
+       <Enter> to open perldoc window
+
    ModuleName Completion:
        
        in insert mode: <Ctrl-x><Ctrl-m> for module name completion (installed
@@ -89,8 +98,8 @@
 
         g:cpan_browser_command  : command for launching browser
         g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
-        g:cpan_win_width        : cpan window width (when vertical)
-        g:cpan_win_height       : cpan window height (when horizontal)
+        g:cpan_win_width     
+        g:cpan_win_height     
         g:cpan_win_mode         : default cpan window mode 
                              (search installed modules or all modules or currentlib ./lib)
         g:cpan_installed_cache  : filename of installed package cache
@@ -101,4 +110,29 @@
         g:cpan_user_defined_sources : user-defined package source paths
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ }}}
+ version check {{{
+if exists('g:loaded_cpan') || v:version < 701
+  "finish
+endif
+let g:loaded_cpan = 0200  "Version
+ }}}
+ configurations "{{{
+let g:CPAN = { }
+let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
+let g:cpan_install_command = ''
+let g:cpan_browser_command = ''
+let g:cpan_win_mode = g:CPAN.Mode.Installed
+let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
+let g:cpan_win_width = 30
+let g:cpan_win_height = 10
+let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
+let g:cpan_source_cache     = expand('~/.vim-cpan-source')
+let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
+let g:cpan_installed_pkgs = []
+let g:cpan_pkgs = []
+let g:cpan_curlib_pkgs = []
+let g:cpan_max_result = 50
+let g:cpan_user_defined_sources = []
+}}}
