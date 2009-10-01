@@ -520,19 +520,19 @@ endf
 
 fu! PrepareCPANModuleCache()
     if len( g:cpan_pkgs ) == 0 
-      echo "preparing cpan module list..."
+      echon "preparing cpan module list..."
       let g:cpan_pkgs = GetCPANModuleList(0)
     endif
 endf
 fu! PrepareInstalledCPANModuleCache()
     if len( g:cpan_installed_pkgs ) == 0 
-      echo "preparing installed cpan module list..."
+      echon "preparing installed cpan module list..."
       let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
     endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
     if len( g:cpan_curlib_pkgs ) == 0 
-      echo "preparing installed cpan module list..."
+      echon "preparing installed cpan module list..."
       let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
     endif
 endf
@@ -541,9 +541,9 @@ endf
 fu! GetCPANModuleList(force)
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
     let path =  GetPackageSourceListPath()
-    echo "executing zcat: " . path
+    echon "executing zcat: " . path
     call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-    echo "done"
+    echon "done"
   endif
   return readfile( g:cpan_source_cache )
 endf
@@ -551,12 +551,12 @@ endf
 fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    echo "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
+    echon "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . g:cpan_installed_cache )
-    echo "done"
+    echon "done"
   endif
   return readfile( g:cpan_installed_cache )
 endf
@@ -564,12 +564,12 @@ endf
 fu! GetCurrentLibCPANModuleList(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
-    echo "finding packages... from lib/"
+    echon "finding packages... from lib/"
     call system( 'find lib -type f -iname "*.pm" ' 
                 \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
                 \ . " | perl -pe 's/^package (.*?);/\$1/' "
                 \ . " | sort | uniq > " . cpan_curlib_cache )
-    echo "done"
+    echon "done"
   endif
   return readfile( cpan_curlib_cache )
 endf
@@ -602,6 +602,14 @@ fun! OpenPerldocWindow(name,param)
     setfiletype perldoc
     silent file Perldoc
     exec 'r !perldoc -tT ' . a:param . ' ' . a:name
+
+    syn match HEADER +^\w.*$+
+    syn match STRING +".\{-}"+
+    syn match STRING2 +'.\{-}'+
+    hi link HEADER Identifier
+    hi link STRING Comment
+    hi link STRING2 Comment
+
     setlocal nomodifiable
     call cursor(1,1)
     resize 50
@@ -663,7 +671,7 @@ fu! CompleteInstalledCPANModuleList()
 
     let start_pos  = GetCompStartPos()
     let base = GetCompBase()
-    echo "filtering..."
+    echon "filtering..."
     " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
     let res = []
     for p in g:cpan_installed_pkgs 
@@ -677,14 +685,14 @@ endf
 
 fu! CompleteCPANModuleList()
     if len( g:cpan_pkgs ) == 0 
-      echo "preparing cpan module list..."
+      echon "preparing cpan module list..."
       let g:cpan_pkgs = GetCPANModuleList(0)
-      echo "done"
+      echon "done"
     endif
 
     let start_pos  = GetCompStartPos()
     let base = GetCompBase()
-    echo "filtering..."
+    echon "filtering..."
     let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
     call complete( start_pos[1]+1 , res )
     return ''
