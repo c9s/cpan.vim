@@ -269,7 +269,11 @@ fun! s:WindowManager.split(position,type,size)
     setlocal cursorline
     setlocal nonumber
     setlocal fdc=0
-    call self.buffer_init()
+    call self.init_buffer()
+    call self.init_syntax()
+    call self.init_basic_mapping()
+    call self.init_mapping()
+    call self.start()
   elseif bufwinnr(self.buf_nr) == -1 
     exec a:position . ' ' . a:size . a:type
     execute self.buf_nr . 'buffer'
@@ -279,8 +283,33 @@ fun! s:WindowManager.split(position,type,size)
   endif
 endf
 
+fun! s:WindowManager.start()
+    call cursor( 1, 1 )
+    startinsert
+endf
+
 fun! s:WindowManager.init_buffer()
 
+endf
+
+fun! s:WindowManager.init_syntax()
+
+endf
+
+fun! s:WindowManager.init_mapping()
+
+endf
+
+fun! s:WindowManager.init_basic_mapping()
+    imap <buffer>     <Enter> <ESC>j<Enter>
+    imap <buffer>     <C-a>   <Esc>0i
+    imap <buffer>     <C-e>   <Esc>A
+    imap <buffer>     <C-b>   <Esc>i
+    imap <buffer>     <C-f>   <Esc>a
+    inoremap <buffer> <C-n> <ESC>j
+    nnoremap <buffer> <C-n> j
+    nnoremap <buffer> <C-p> k
+    nnoremap <buffer> <ESC> <C-W>q
 endf
 
 fun! s:WindowManager.render_result(matches)
@@ -305,40 +334,27 @@ let s:FunctionWindow = copy(s:WindowManager)
 let s:FunctionWindow.resource = [ ]
 
 fun! s:FunctionWindow.init_mapping()
-    " Basic mappings
-    imap <buffer>     <Enter> <ESC>j<Enter>
-    imap <buffer>     <C-a>   <Esc>0i
-    imap <buffer>     <C-e>   <Esc>A
-    imap <buffer>     <C-b>   <Esc>i
-    imap <buffer>     <C-f>   <Esc>a
-
-    inoremap <buffer> <C-n> <ESC>j
-    nnoremap <buffer> <C-n> j
-    nnoremap <buffer> <C-p> k
-    nnoremap <buffer> <ESC> <C-W>q
     nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
 endf
 
-fun! s:FunctionWindow.buffer_init()
-
-  setfiletype perlfunctionwindow
-  let self.resource = readfile( 'perl-functions' )
-  cal self.render_result( self.resource )
-  autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
-  cal self.init_mapping()
-
+fun! s:FunctionWindow.init_syntax()
   "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
       "hi CursorLine ctermbg=DarkCyan ctermfg=Black
       "hi Background ctermbg=darkblue
       syn match PerlFunctionName "^\w\+"
       syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
-      hi PerlFunctionName ctermfg=darkcyan
-      hi PerlType         ctermfg=darkblue
+      hi link PerlFunctionName Identifier
+      hi link PerlType Type
   "endif
-
-  cal cursor(1,1)
-  startinsert
 endf
+
+fun! s:FunctionWindow.init_buffer()
+  setfiletype perlfunctionwindow
+  let self.resource = readfile( 'perl-functions' )
+  cal self.render_result( self.resource )
+  autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
+endf
+
 fun! s:FunctionWindow.update_search()
   let pattern = getline('.')
   let matches = filter( copy( self.resource )  , 'v:val =~ "' . pattern . '"' )
@@ -366,18 +382,13 @@ nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 
 let s:CPANWindow = copy(s:WindowManager)
 
-fun! s:CPANWindow.buffer_init()
+fun! s:CPANWindow.init_buffer()
     setfiletype cpanwindow
     cal PrepareInstalledCPANModuleCache()
     cal self.render_result( g:cpan_installed_pkgs )
     autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
     autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
-
-    call self.init_mapping()
-    call self.init_syntax()
     call self.refresh_buffer_name()
-    call cursor( 1, 1 )
-    startinsert
 endf
 
 fun! s:CPANWindow.buffer_reload_init()
