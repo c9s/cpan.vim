@@ -346,7 +346,7 @@ fun! s:FunctionWindow.init_syntax()
   "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
       "hi CursorLine ctermbg=DarkCyan ctermfg=Black
       "hi Background ctermbg=darkblue
-      syn match PerlFunctionName "^\w\+"
+      syn match PerlFunctionName "^\S\+"
       syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
       hi link PerlFunctionName Identifier
       hi link PerlType Type
@@ -360,6 +360,7 @@ fun! s:FunctionWindow.init_buffer()
   echon "Done"
   cal self.render_result( self.resource )
   autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
+  silent file Perl\ Builtin\ Functions
 endf
 
 fun! s:FunctionWindow.buffer_reload_init()
