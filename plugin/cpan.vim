@@ -294,10 +294,17 @@ endf
 
 " ==== Window Manager =========================================== }}}
 
-" &&&& function search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-let s:FWindow = copy(s:WindowManager)
-let s:FWindow.resource = [ ]
-fun! s:FWindow.init_mapping()
+
+" &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+"
+" Features
+"   built-in function name search
+"   perl api function name search
+"
+let s:FunctionWindow = copy(s:WindowManager)
+let s:FunctionWindow.resource = [ ]
+
+fun! s:FunctionWindow.init_mapping()
     " Basic mappings
     imap <buffer>     <Enter> <ESC>j<Enter>
     imap <buffer>     <C-a>   <Esc>0i
@@ -309,16 +316,15 @@ fun! s:FWindow.init_mapping()
     nnoremap <buffer> <C-n> j
     nnoremap <buffer> <C-p> k
     nnoremap <buffer> <ESC> <C-W>q
+    nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
 endf
-fun! s:FWindow.enter_result()
 
-endf
-fun! s:FWindow.buffer_init()
+fun! s:FunctionWindow.buffer_init()
 
   setfiletype perlfunctionwindow
   let self.resource = readfile( 'perl-functions' )
   cal self.render_result( self.resource )
-  autocmd CursorMovedI <buffer> call s:FWindow.update_search()
+  autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
   cal self.init_mapping()
 
   "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
@@ -333,7 +339,7 @@ fun! s:FWindow.buffer_init()
   cal cursor(1,1)
   startinsert
 endf
-fun! s:FWindow.update_search()
+fun! s:FunctionWindow.update_search()
   let pattern = getline('.')
   let matches = filter( copy( self.resource )  , 'v:val =~ "' . pattern . '"' )
   "if len(funcs) > g:func_max_result 
@@ -347,6 +353,14 @@ fun! s:FWindow.update_search()
   startinsert
 endf
 
+fun! s:FunctionWindow.switch_mode()
+
+endf
+
+com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
+com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
+
+nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
@@ -392,7 +406,7 @@ fun! s:CPANWindow.init_mapping()
     inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
     nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-    nnoremap <buffer> $   :call OpenPerldocWindow( expand('<cWORD>') )<CR>
+    nnoremap <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
     nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
     nnoremap <buffer> <Enter> :call GotoModule()<CR>
@@ -533,13 +547,17 @@ com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
+" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
+nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
+nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
+
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
-com! OpenRefWindow        :call s:FWindow.open('topleft', 'split',10)
 
 " &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
-fun! OpenPerldocWindow(module)
+fun! OpenPerldocWindow(name,param)
     vnew
     setlocal modifiable
     setlocal noswapfile
@@ -552,7 +570,7 @@ fun! OpenPerldocWindow(module)
     setlocal fdc=0
     setfiletype perldoc
     silent file Perldoc
-    exec 'r !perldoc -tT ' . a:module
+    exec 'r !perldoc -tT ' . a:param . ' ' . a:name
     setlocal nomodifiable
     call cursor(1,1)
     resize 50
@@ -654,7 +672,7 @@ fu! GetCompBase()
 endf
 "}}}
 
-" 
+" XXX: implement this
 " Perl Completion Features:
 "
 " when user type '$self' or '$class' , press [key] to trigger completion function
@@ -712,26 +730,7 @@ endf
 " App::Class
 " [var name]
 " [function name]  (line nn)
-"
-"
-let s:FunctionWindow = copy(s:WindowManager)
 
-fun! s:FunctionWindow.open()
-
-endf
-
-fun! CompleteFunction()
-  botright 6new
-  wincmd w
-  return '->'
-endf
-
-" inoremap ->  <C-R>=CompleteFunction()<CR>
-
-" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
-nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
@@ -739,7 +738,6 @@ nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)
 com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(1)
-
 
 " for testing...
 " Jifty::Collection
