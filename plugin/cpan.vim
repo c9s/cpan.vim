@@ -245,7 +245,6 @@ fun! GotoModule()
   call GotoModuleFileInPaths( getline('.') )
 endf
 
-
 " ==== Window Manager =========================================== {{{
 let s:WindowManager = { 'buf_nr' : -1 }
 
@@ -283,16 +282,69 @@ endf
 fun! s:WindowManager.init_buffer()
 
 endf
+
+fun! s:WindowManager.render_result(matches)
+    let @o = join( a:matches , "\n" )
+    silent put o
+endf
+
+fun! s:WindowManager.close()
+  silent 0f
+endf
+
 " ==== Window Manager =========================================== }}}
 
 " &&&& function search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 let s:FWindow = copy(s:WindowManager)
-let s:FWindow.functionlist = { };
-fun! s:FWindow.buffer_init()
-  setfiletype perlfunctionwindow
-endf
-fun! s:FWindow.render_result()
+let s:FWindow.resource = [ ]
+fun! s:FWindow.init_mapping()
+    " Basic mappings
+    imap <buffer>     <Enter> <ESC>j<Enter>
+    imap <buffer>     <C-a>   <Esc>0i
+    imap <buffer>     <C-e>   <Esc>A
+    imap <buffer>     <C-b>   <Esc>i
+    imap <buffer>     <C-f>   <Esc>a
 
+    inoremap <buffer> <C-n> <ESC>j
+    nnoremap <buffer> <C-n> j
+    nnoremap <buffer> <C-p> k
+    nnoremap <buffer> <ESC> <C-W>q
+endf
+fun! s:FWindow.enter_result()
+
+endf
+fun! s:FWindow.buffer_init()
+
+  setfiletype perlfunctionwindow
+  let self.resource = readfile( 'perl-functions' )
+  cal self.render_result( self.resource )
+  autocmd CursorMovedI <buffer> call s:FWindow.update_search()
+  cal self.init_mapping()
+
+  "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+      "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+      "hi Background ctermbg=darkblue
+      syn match PerlFunctionName "^\w\+"
+      syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
+      hi PerlFunctionName ctermfg=darkcyan
+      hi PerlType         ctermfg=darkblue
+  "endif
+
+  cal cursor(1,1)
+  startinsert
+endf
+fun! s:FWindow.update_search()
+  let pattern = getline('.')
+  let matches = filter( copy( self.resource )  , 'v:val =~ "' . pattern . '"' )
+  "if len(funcs) > g:func_max_result 
+  "  let pkgs = remove( pkgs , 0 , g:cpan_max_result )
+  "endif
+  " XXX: refactor this
+  let old = getpos('.')
+  silent 2,$delete _
+  cal self.render_result( matches )
+  cal setpos('.',old)
+  startinsert
 endf
 
 
@@ -328,7 +380,6 @@ fun! s:CPANWindow.init_mapping()
     imap <buffer>     <C-e>   <Esc>A
     imap <buffer>     <C-b>   <Esc>i
     imap <buffer>     <C-f>   <Esc>a
-    imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
 
     " Motion bindings
     inoremap <buffer> <C-n> <ESC>j
@@ -337,6 +388,7 @@ fun! s:CPANWindow.init_mapping()
     nnoremap <buffer> <ESC> <C-W>q
 
     " Module action bindings
+    imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
     inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
     nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
@@ -375,9 +427,6 @@ fun! s:CPANWindow.refresh_buffer_name()
     endif
 endf
 
-fun! s:CPANWindow.close()
-  silent 0f
-endf
 
 fun! s:CPANWindow.update_search()
     let pattern = getline('.')
@@ -405,10 +454,6 @@ fun! s:CPANWindow.update_search()
     startinsert
 endfunc
 
-fun! s:CPANWindow.render_result(pkgs)
-    let @o = join( a:pkgs , "\n" )
-    silent put o
-endf
 
 fun! InstallCPANModule()
 	exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
@@ -489,6 +534,8 @@ com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_wi
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
+
+com! OpenRefWindow        :call s:FWindow.open('topleft', 'split',10)
 
 " &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
