@@ -288,6 +288,11 @@ fun! s:WindowManager.start()
     startinsert
 endf
 
+
+fun! s:WindowManager.buffer_reload_init()
+
+endf
+
 fun! s:WindowManager.init_buffer()
 
 endf
@@ -350,9 +355,17 @@ endf
 
 fun! s:FunctionWindow.init_buffer()
   setfiletype perlfunctionwindow
-  let self.resource = readfile( 'perl-functions' )
+  echon "Loading Function List..."
+  let self.resource = readfile( expand('~/.vim/perl/perl-functions') )
+  echon "Done"
   cal self.render_result( self.resource )
   autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
+endf
+
+fun! s:FunctionWindow.buffer_reload_init()
+  call setline(1,'')
+  call cursor(1,1)
+  startinsert
 endf
 
 fun! s:FunctionWindow.update_search()
