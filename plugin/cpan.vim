@@ -105,7 +105,6 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
-
 " version check {{{
 if exists('g:loaded_cpan') || v:version < 701
   "finish
@@ -250,6 +249,10 @@ endf
 " ==== Window Manager =========================================== {{{
 let s:WindowManager = { 'buf_nr' : -1 }
 
+fun! s:WindowManager.open(pos,type,size)
+  call self.split(a:pos,a:type,a:size)
+endf
+
 fun! s:WindowManager.split(position,type,size)
   if ! bufexists( self.buf_nr )
     if a:type == 'split'
@@ -282,18 +285,25 @@ fun! s:WindowManager.init_buffer()
 endf
 " ==== Window Manager =========================================== }}}
 
+" &&&& function search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+let s:FWindow = copy(s:WindowManager)
+let s:FWindow.functionlist = { };
+fun! s:FWindow.buffer_init()
+  setfiletype perlfunctionwindow
+endf
+fun! s:FWindow.render_result()
+
+endf
+
+
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
 let s:CPANWindow = copy(s:WindowManager)
 
-fun! s:CPANWindow.open(type,size)
-  call self.split('topleft',a:type,a:size)
-endf
-
 fun! s:CPANWindow.buffer_init()
     setfiletype cpanwindow
     cal PrepareInstalledCPANModuleCache()
-    call self.render_result( g:cpan_installed_pkgs )
+    cal self.render_result( g:cpan_installed_pkgs )
     autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
     autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
 
@@ -475,8 +485,8 @@ fu! GetCurrentLibCPANModuleList(force)
 endf
 
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
-com! OpenCPANWindowS        :call s:CPANWindow.open('split',g:cpan_win_height)
-com! OpenCPANWindowSV       :call s:CPANWindow.open('vsplit',g:cpan_win_width)
+com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
+com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
@@ -630,18 +640,20 @@ endf
 " after all , the completion window should be closed
 "
 " Completion Window:
-" there are more than 1 parts to list completion in perl completion window
-"  * BaseClass    (from 'use base qw//')
-"     * accessors
-"     * variables
-"     * constants
-"     * functions
 "
-"  * CurrentClass ($self,$class)
-"     * accessors
-"     * variables
-"     * constants
-"     * functions
+" there are more than 1 parts to list completion in perl completion window
+" === BaseClass    (from 'use base qw//')
+" = accessors =
+" = variables =
+" = constants =
+" = functions =
+"
+" === CurrentClass (package [ ];)
+" = accessors =
+" = variables =
+" = constants = 
+" = functions =
+"
 "
 " Function List Item Format:
 "
