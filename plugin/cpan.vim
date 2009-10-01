@@ -370,7 +370,7 @@ endf
 
 fun! s:FunctionWindow.update_search()
   let pattern = getline('.')
-  let matches = filter( copy( self.resource )  , 'v:val =~ "' . pattern . '"' )
+  let matches = filter( copy( self.resource )  , 'v:val =~ "^' . pattern . '"' )
   "if len(funcs) > g:func_max_result 
   "  let pkgs = remove( pkgs , 0 , g:cpan_max_result )
   "endif
