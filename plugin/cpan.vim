@@ -176,36 +176,36 @@ fun! TranslateModuleName(n)
 endf
 
 fun! TabGotoFile(fullpath,method)
-    execute ':tabedit ' . a:fullpath
-    if strlen(a:method) > 0
-      let s = search( '^sub\s\+' . a:method . '\s' , '', 0 )
-      if !s 
-        "echomsg "Can not found method: " . a:method 
-      endif
+  execute ':tabedit ' . a:fullpath
+  if strlen(a:method) > 0
+    let s = search( '^sub\s\+' . a:method . '\s' , '', 0 )
+    if !s 
+      "echomsg "Can not found method: " . a:method 
     endif
-    return 1
+  endif
+  return 1
 endf
 
 fun! GotoFile(fullpath,method)
-    execute ':e ' . a:fullpath
-    if strlen(a:method) > 0
-      call search( '^sub\s\+' . a:method . '\s' , '', 0 )
-    endif
-    return 1
+  execute ':e ' . a:fullpath
+  if strlen(a:method) > 0
+    call search( '^sub\s\+' . a:method . '\s' , '', 0 )
+  endif
+  return 1
 endf
 
 " check file expiry
 "    @file:    filename
 "    @expiry:  minute
 fu! IsExpired(file,expiry)
-    let lt = localtime( )
-    let ft = getftime( expand( a:file ) )
-    let dist = lt - ft
-    if dist > a:expiry * 60 
-        return 1
-    else
-        return 0
-    endif
+  let lt = localtime( )
+  let ft = getftime( expand( a:file ) )
+  let dist = lt - ft
+  if dist > a:expiry * 60 
+    return 1
+  else
+    return 0
+  endif
 endf
 
 
@@ -290,8 +290,8 @@ fun! s:WindowManager.split(position,type,size)
 endf
 
 fun! s:WindowManager.start()
-    call cursor( 1, 1 )
-    startinsert
+  call cursor( 1, 1 )
+  startinsert
 endf
 
 
@@ -312,20 +312,20 @@ fun! s:WindowManager.init_mapping()
 endf
 
 fun! s:WindowManager.init_basic_mapping()
-    imap <buffer>     <Enter> <ESC>j<Enter>
-    imap <buffer>     <C-a>   <Esc>0i
-    imap <buffer>     <C-e>   <Esc>A
-    imap <buffer>     <C-b>   <Esc>i
-    imap <buffer>     <C-f>   <Esc>a
-    inoremap <buffer> <C-n> <ESC>j
-    nnoremap <buffer> <C-n> j
-    nnoremap <buffer> <C-p> k
-    nnoremap <buffer> <ESC> <C-W>q
+  imap <buffer>     <Enter> <ESC>j<Enter>
+  imap <buffer>     <C-a>   <Esc>0i
+  imap <buffer>     <C-e>   <Esc>A
+  imap <buffer>     <C-b>   <Esc>i
+  imap <buffer>     <C-f>   <Esc>a
+  inoremap <buffer> <C-n> <ESC>j
+  nnoremap <buffer> <C-n> j
+  nnoremap <buffer> <C-p> k
+  nnoremap <buffer> <ESC> <C-W>q
 endf
 
 fun! s:WindowManager.render_result(matches)
-    let @o = join( a:matches , "\n" )
-    silent put o
+  let @o = join( a:matches , "\n" )
+  silent put o
 endf
 
 fun! s:WindowManager.close()
@@ -342,21 +342,24 @@ endf
 "   built-in function name search
 "   perl api function name search
 "
+
 let s:FunctionWindow = copy(s:WindowManager)
+let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
+let s:FunctionWindow.mode = 0
 
 fun! s:FunctionWindow.init_mapping()
-    nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
+  nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
 endf
 
 fun! s:FunctionWindow.init_syntax()
   "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-      "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-      "hi Background ctermbg=darkblue
-      syn match PerlFunctionName "^\S\+"
-      syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
-      hi link PerlFunctionName Identifier
-      hi link PerlType Type
+  "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+  "hi Background ctermbg=darkblue
+  syn match PerlFunctionName "^\S\+"
+  syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
+  hi link PerlFunctionName Identifier
+  hi link PerlType Type
   "endif
 endf
 
@@ -391,6 +394,11 @@ fun! s:FunctionWindow.update_search()
 endf
 
 fun! s:FunctionWindow.switch_mode()
+  if self.mode == 1 
+    let self.mode = 0
+  else 
+    let self.mode = self.mode + 1
+  endif
 
 endf
 
@@ -404,137 +412,137 @@ nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 let s:CPANWindow = copy(s:WindowManager)
 
 fun! s:CPANWindow.init_buffer()
-    setfiletype cpanwindow
-    cal PrepareInstalledCPANModuleCache()
-    cal self.render_result( g:cpan_installed_pkgs )
-    autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
-    autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
-    call self.refresh_buffer_name()
+  setfiletype cpanwindow
+  cal PrepareInstalledCPANModuleCache()
+  cal self.render_result( g:cpan_installed_pkgs )
+  autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
+  autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
+  call self.refresh_buffer_name()
 endf
 
 fun! s:CPANWindow.buffer_reload_init()
-    call self.refresh_buffer_name()
-    startinsert
-    call cursor( 1 , col('$')  )
+  call self.refresh_buffer_name()
+  startinsert
+  call cursor( 1 , col('$')  )
 endf
 
 fun! s:CPANWindow.init_mapping()
-    imap <buffer>     <Enter> <ESC>j<Enter>
-    imap <buffer>     <C-t>   <ESC>jt
-    imap <buffer>     <C-a>   <Esc>0i
-    imap <buffer>     <C-e>   <Esc>A
-    imap <buffer>     <C-b>   <Esc>i
-    imap <buffer>     <C-f>   <Esc>a
+  imap <buffer>     <Enter> <ESC>j<Enter>
+  imap <buffer>     <C-t>   <ESC>jt
+  imap <buffer>     <C-a>   <Esc>0i
+  imap <buffer>     <C-e>   <Esc>A
+  imap <buffer>     <C-b>   <Esc>i
+  imap <buffer>     <C-f>   <Esc>a
 
-    " Motion bindings
-    inoremap <buffer> <C-n> <ESC>j
-    nnoremap <buffer> <C-n> j
-    nnoremap <buffer> <C-p> k
-    nnoremap <buffer> <ESC> <C-W>q
+  " Motion bindings
+  inoremap <buffer> <C-n> <ESC>j
+  nnoremap <buffer> <C-n> j
+  nnoremap <buffer> <C-p> k
+  nnoremap <buffer> <ESC> <C-W>q
 
-    " Module action bindings
-    imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
-    inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
-    nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
+  " Module action bindings
+  imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
+  inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
+  nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-    nnoremap <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
-    nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
+  nnoremap <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
+  nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
-    nnoremap <buffer> <Enter> :call GotoModule()<CR>
-    nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
-    nnoremap <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+  nnoremap <buffer> <Enter> :call GotoModule()<CR>
+  nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+  nnoremap <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
 fun! s:CPANWindow.init_syntax()
-    if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-        "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-        hi Background ctermbg=darkblue
-    endif
+  if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+    "hi CursorLine ctermbg=DarkCyan ctermfg=Black
+    hi Background ctermbg=darkblue
+  endif
 endf
 
 fun! s:CPANWindow.switch_mode()
-    let g:cpan_win_mode = g:cpan_win_mode + 1
-    if g:cpan_win_mode == 4
-      let g:cpan_win_mode = 1
-    endif
-    call self.refresh_buffer_name()
-    call self.update_search()
-    call cursor( 1, col('$') )
+  let g:cpan_win_mode = g:cpan_win_mode + 1
+  if g:cpan_win_mode == 4
+    let g:cpan_win_mode = 1
+  endif
+  call self.refresh_buffer_name()
+  call self.update_search()
+  call cursor( 1, col('$') )
 endf
 
 fun! s:CPANWindow.refresh_buffer_name()
-    if g:cpan_win_mode == g:CPAN.Mode.Installed 
-      silent file CPAN\ (Installed)
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      silent file CPAN\ (All)
-    elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
-      silent file CPAN\ (CurrentLib)
-    endif
+  if g:cpan_win_mode == g:CPAN.Mode.Installed 
+    silent file CPAN\ (Installed)
+  elseif g:cpan_win_mode == g:CPAN.Mode.All
+    silent file CPAN\ (All)
+  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
+    silent file CPAN\ (CurrentLib)
+  endif
 endf
 
 
 fun! s:CPANWindow.update_search()
-    let pattern = getline('.')
+  let pattern = getline('.')
 
-    let pkgs = []
-    if g:cpan_win_mode == g:CPAN.Mode.Installed
-      cal PrepareInstalledCPANModuleCache()
-      let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
-    elseif g:cpan_win_mode == g:CPAN.Mode.All
-      cal PrepareCPANModuleCache()
-      let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
-    elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
-      cal PrepareCurrentLibCPANModuleCache()
-      let pkgs = filter( copy( g:cpan_curlib_pkgs ) , 'v:val =~ "' . pattern . '"' )
-    endif
+  let pkgs = []
+  if g:cpan_win_mode == g:CPAN.Mode.Installed
+    cal PrepareInstalledCPANModuleCache()
+    let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
+  elseif g:cpan_win_mode == g:CPAN.Mode.All
+    cal PrepareCPANModuleCache()
+    let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
+  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
+    cal PrepareCurrentLibCPANModuleCache()
+    let pkgs = filter( copy( g:cpan_curlib_pkgs ) , 'v:val =~ "' . pattern . '"' )
+  endif
 
-    if len(pkgs) > g:cpan_max_result 
-      let pkgs = remove( pkgs , 0 , g:cpan_max_result )
-    endif
+  if len(pkgs) > g:cpan_max_result 
+    let pkgs = remove( pkgs , 0 , g:cpan_max_result )
+  endif
 
-    let old = getpos('.')
-    silent 2,$delete _
-    call self.render_result( pkgs )
-    call setpos('.',old)
-    startinsert
+  let old = getpos('.')
+  silent 2,$delete _
+  call self.render_result( pkgs )
+  call setpos('.',old)
+  startinsert
 endfunc
 
 
 fun! InstallCPANModule()
-	exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
+  exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
 endf
 
 fu! GetPackageSourceListPath()
-    let paths = [ 
-                \expand('~/.cpanplus/02packages.details.txt.gz'),
-                \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
-                \]
-    call extend( paths , g:cpan_user_defined_sources )
-    for f in paths 
-      if filereadable( f ) 
-        return f
-      endif
-    endfor
-    return
+  let paths = [ 
+        \expand('~/.cpanplus/02packages.details.txt.gz'),
+        \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
+        \]
+  call extend( paths , g:cpan_user_defined_sources )
+  for f in paths 
+    if filereadable( f ) 
+      return f
+    endif
+  endfor
+  return
 endf
 
 fu! PrepareCPANModuleCache()
-    if len( g:cpan_pkgs ) == 0 
-      echon "preparing cpan module list..."
-      let g:cpan_pkgs = GetCPANModuleList(0)
-    endif
+  if len( g:cpan_pkgs ) == 0 
+    echon "preparing cpan module list..."
+    let g:cpan_pkgs = GetCPANModuleList(0)
+  endif
 endf
 fu! PrepareInstalledCPANModuleCache()
-    if len( g:cpan_installed_pkgs ) == 0 
-      echon "preparing installed cpan module list..."
-      let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
-    endif
+  if len( g:cpan_installed_pkgs ) == 0 
+    echon "preparing installed cpan module list..."
+    let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
+  endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
-    if len( g:cpan_curlib_pkgs ) == 0 
-      echon "preparing installed cpan module list..."
-      let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
-    endif
+  if len( g:cpan_curlib_pkgs ) == 0 
+    echon "preparing installed cpan module list..."
+    let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
+  endif
 endf
 
 " Return: cpan module list [list]
@@ -553,9 +561,9 @@ fu! GetInstalledCPANModuleList(force)
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     echon "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
-                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-                \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . g:cpan_installed_cache )
+          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+          \ . " | perl -pe 's/^package (.*?);/\$1/' "
+          \ . " | sort | uniq > " . g:cpan_installed_cache )
     echon "done"
   endif
   return readfile( g:cpan_installed_cache )
@@ -566,9 +574,9 @@ fu! GetCurrentLibCPANModuleList(force)
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     echon "finding packages... from lib/"
     call system( 'find lib -type f -iname "*.pm" ' 
-                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-                \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq > " . cpan_curlib_cache )
+          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+          \ . " | perl -pe 's/^package (.*?);/\$1/' "
+          \ . " | sort | uniq > " . cpan_curlib_cache )
     echon "done"
   endif
   return readfile( cpan_curlib_cache )
@@ -589,32 +597,32 @@ nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 " &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
 fun! OpenPerldocWindow(name,param)
-    vnew
-    setlocal modifiable
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal nowrap
-    setlocal cursorline
-    setlocal nonumber
-    setlocal fdc=0
-    setfiletype perldoc
-    silent file Perldoc
-    exec 'r !perldoc -tT ' . a:param . ' ' . a:name
+  vnew
+  setlocal modifiable
+  setlocal noswapfile
+  setlocal buftype=nofile
+  setlocal bufhidden=hide
+  setlocal nobuflisted
+  setlocal nowrap
+  setlocal cursorline
+  setlocal nonumber
+  setlocal fdc=0
+  setfiletype perldoc
+  silent file Perldoc
+  exec 'r !perldoc -tT ' . a:param . ' ' . a:name
 
-    syn match HEADER +^\w.*$+
-    syn match STRING +".\{-}"+
-    syn match STRING2 +'.\{-}'+
-    hi link HEADER Identifier
-    hi link STRING Comment
-    hi link STRING2 Comment
+  syn match HEADER +^\w.*$+
+  syn match STRING +".\{-}"+
+  syn match STRING2 +'.\{-}'+
+  hi link HEADER Identifier
+  hi link STRING Comment
+  hi link STRING2 Comment
 
-    setlocal nomodifiable
-    call cursor(1,1)
-    resize 50
-    vertical resize 82
-    autocmd BufWinLeave <buffer> call ClosePerldocWindow()
+  setlocal nomodifiable
+  call cursor(1,1)
+  resize 50
+  vertical resize 82
+  autocmd BufWinLeave <buffer> call ClosePerldocWindow()
 endf
 
 fun! ClosePerldocWindow()
@@ -632,12 +640,12 @@ endf
 " Function: FindPerlPackageFiles
 " Return: package [list]
 fun! FindPerlPackageFiles()
-    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
-                \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-                \ . " | perl -pe 's/^package (.*?);/\$1/' "
-                \ . " | sort | uniq " )
-    return pkgs
+  let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+  let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
+        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq " )
+  return pkgs
 endf
 
 " Function header helper  {{{
@@ -668,47 +676,47 @@ endf
 " Completions &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
 fu! CompleteInstalledCPANModuleList()
-    cal PrepareInstalledCPANModuleCache()
+  cal PrepareInstalledCPANModuleCache()
 
-    let start_pos  = GetCompStartPos()
-    let base = GetCompBase()
-    echon "filtering..."
-    " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
-    let res = []
-    for p in g:cpan_installed_pkgs 
-      if p =~ '^' . base 
-        call insert( res , p )
-      endif
-    endfor
-    call complete( start_pos[1]+1 , res )
-    return ''
+  let start_pos  = GetCompStartPos()
+  let base = GetCompBase()
+  echon "filtering..."
+  " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
+  let res = []
+  for p in g:cpan_installed_pkgs 
+    if p =~ '^' . base 
+      call insert( res , p )
+    endif
+  endfor
+  call complete( start_pos[1]+1 , res )
+  return ''
 endf
 
 fu! CompleteCPANModuleList()
-    if len( g:cpan_pkgs ) == 0 
-      echon "preparing cpan module list..."
-      let g:cpan_pkgs = GetCPANModuleList(0)
-      echon "done"
-    endif
+  if len( g:cpan_pkgs ) == 0 
+    echon "preparing cpan module list..."
+    let g:cpan_pkgs = GetCPANModuleList(0)
+    echon "done"
+  endif
 
-    let start_pos  = GetCompStartPos()
-    let base = GetCompBase()
-    echon "filtering..."
-    let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
-    call complete( start_pos[1]+1 , res )
-    return ''
+  let start_pos  = GetCompStartPos()
+  let base = GetCompBase()
+  echon "filtering..."
+  let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
+  call complete( start_pos[1]+1 , res )
+  return ''
 endf
 
 fu! GetCompStartPos()
-    return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
+  return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
 
 fu! GetCompBase()
-    let col = col('.')
-    let pos = GetCompStartPos()
-    let line = getline('.')
-    let base =  strpart( line , pos[1] , col )
-    return base
+  let col = col('.')
+  let pos = GetCompStartPos()
+  let line = getline('.')
+  let base =  strpart( line , pos[1] , col )
+  return base
 endf
 "}}}
 
