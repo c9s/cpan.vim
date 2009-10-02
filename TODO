@@ -1,0 +1,28 @@
+# vim:fdm=expr:foldexpr=getline(v\:lnum)=~'^=='?'>1'\:getline(v\:lnum)[0]=~'[*x(]'?'>2'\:'=':fdl=1:
+
+== features ==
+
+x install module 
+
+x uninstall module
+
+x search module in current lib path (mode)
+
+x built-in function search
+
+* search module by author name
+
+* display module information
+
+* perlapi function search
+
+* support moose features
+
+* search mode depends on filetype  , support ruby , haskell , c
+
+* $self->,$class-> completion
+    search function names from current package name
+    complete function names from "use base qw(Modules...)";
+    and current file
+
+* Module::Name completion
