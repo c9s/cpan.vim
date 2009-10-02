@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 # get perl function list
-open(FH, '-|', qq|podselect -section 'DESCRIPTION/Alphabetical Listing of Perl Functions' pod/perlfunc.pod| );
+my $pathes = join ' ',@INC;
+my $pod = qx( find $pathes -name perlfunc.pod);
+chomp $pod;
+
+open(FH, '-|', qq|podselect -section 'DESCRIPTION/Alphabetical Listing of Perl Functions' $pod| );
 my @func ;
 my $inline = 0;
 while( <FH> )
