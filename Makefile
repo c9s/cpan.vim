@@ -14,5 +14,5 @@ doc:
 	vim plugin/cpan.vim -c "call cursor(1,1)" -c "exec '1,'.search('^\n').'write! README'" -c ":q"
 	perl -i -pe 's{^"}{}' README
 
-pack:
+dist:
 		tar cvzf cpan.vim.tar.gz plugin/ utils/ perl-functions
