@@ -111,8 +111,6 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
-
-
 " version check {{{
 if exists('g:loaded_cpan') || v:version < 701
   "finish
@@ -331,7 +329,8 @@ fun! s:WindowManager.render_result(matches)
 endf
 
 fun! s:WindowManager.close()
-  silent 0f
+  " since we call buffer back , we dont need to remove buffername
+  " silent 0f
 endf
 
 " ==== Window Manager =========================================== }}}
@@ -379,7 +378,7 @@ endf
 
 fun! s:FunctionWindow.update_search()
   let pattern = getline('.')
-  let matches = filter( copy( self.resource )  , 'v:val =~ "^' . pattern . '"' )
+  let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
   "if len(funcs) > g:func_max_result 
   "  let pkgs = remove( pkgs , 0 , g:cpan_max_result )
   "endif
@@ -418,7 +417,6 @@ fun! s:CPANWindow.buffer_reload_init()
     startinsert
     call cursor( 1 , col('$')  )
 endf
-
 
 fun! s:CPANWindow.init_mapping()
     imap <buffer>     <Enter> <ESC>j<Enter>
@@ -625,7 +623,8 @@ fun! ClosePerldocWindow()
   else
     exec 'resize ' . g:cpan_win_height
   endif
-  silent 0f
+  bw
+  "silent 0f
   close
 endf
 "}}}
@@ -714,7 +713,7 @@ endf
 "}}}
 
 " XXX: implement this
-" Perl Completion Features:
+" Perl Completion Features:"{{{
 "
 " when user type '$self' or '$class' , press [key] to trigger completion function
 "   (or just map '->' key to trigger completion function)
@@ -771,7 +770,7 @@ endf
 " App::Class
 " [var name]
 " [function name]  (line nn)
-
+"}}}
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
