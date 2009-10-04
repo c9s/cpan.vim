@@ -25,6 +25,7 @@
  Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
  Site: http://oulixe.us/
  Date: Sun Sep 19 10:47:15 2009
+ Repository:  http://github.com/c9s/cpan-list.vim
  Screencast:  http://www.youtube.com/watch?v=erF0NWUIbr4  <cpan.vim>
 
  Keywords: perl , cpan , vim
@@ -70,6 +71,11 @@
        6. 
            <ESC><ESC> to close cpan window
 
+   Ctags Search Window:
+       press <C-c><C-t> to open ctags search window
+       press <Enter> to goto tag
+       press t to goto tag in a new tab
+
    Function Search Window:
 
        press <C-c><C-f> to open function search window
@@ -111,4 +117,28 @@
 
  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  }}}
+ version check {{{
+if exists('g:loaded_cpan') || v:version < 701
+  "finish
+endif
+let g:loaded_cpan = 0200  "Version
+ }}}
+ configurations "{{{
+let g:CPAN = { }
+let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
+let g:cpan_install_command = ''
+let g:cpan_browser_command = ''
+let g:cpan_win_mode = g:CPAN.Mode.Installed
+let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
+let g:cpan_win_width = 30
+let g:cpan_win_height = 10
+let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
+let g:cpan_source_cache     = expand('~/.vim-cpan-source')
+let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
+let g:cpan_installed_pkgs = []
+let g:cpan_pkgs = []
+let g:cpan_curlib_pkgs = []
+let g:cpan_max_result = 50
+let g:cpan_user_defined_sources = []
+}}}
