@@ -43,7 +43,6 @@
 " Usage:
 "   CPAN Window:
 "       1. 
-"
 "           type <C-c><C-m> to open cpan window horizontally
 "           type <C-c><C-v> to open cpan window vertically
 "
@@ -69,7 +68,8 @@
 "           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
 "
 "       6. 
-"           <ESC><ESC> to close cpan window
+"           <ESC><ESC> to close search window
+"           you can also press <C-c> in insert mode to close search window too
 "
 "   Ctags Search Window:
 "       press <C-c><C-t> to open ctags search window
@@ -360,6 +360,7 @@ endf
 " init_base_mapping()
 " this defines default set mappings
 fun! s:WindowManager.init_basic_mapping()
+  mapclear <buffer>
   imap <buffer>     <Enter> <ESC>j<Enter>
   imap <buffer>     <C-a>   <Esc>0i
   imap <buffer>     <C-e>   <Esc>A
@@ -369,6 +370,7 @@ fun! s:WindowManager.init_basic_mapping()
   nnoremap <buffer> <C-n> j
   nnoremap <buffer> <C-p> k
   nnoremap <buffer> <ESC> <C-W>q
+  inoremap <buffer> <C-c> <ESC><C-W>q
 endf
 
 " reder_result()
@@ -893,8 +895,9 @@ endf
 " [function name]  (line nn)
 "}}}
 
-nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
+
+nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
