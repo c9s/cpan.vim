@@ -282,6 +282,15 @@ fun! GotoModule()
   call GotoModuleFileInPaths( getline('.') )
 endf
 
+fun! FindPerlPackageFiles()
+  let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+  let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
+        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq " )
+  return pkgs
+endf
+
 " ==== Window Manager =========================================== {{{
 let s:WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
 
@@ -754,16 +763,6 @@ fun! ClosePerldocWindow()
 endf
 "}}}
 
-" Function: FindPerlPackageFiles
-" Return: package [list]
-fun! FindPerlPackageFiles()
-  let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-  let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
-        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-        \ . " | perl -pe 's/^package (.*?);/\$1/' "
-        \ . " | sort | uniq " )
-  return pkgs
-endf
 
 " Function header helper  {{{
 " insert pod template like this:
@@ -896,6 +895,7 @@ endf
 " [var name]
 " [function name]  (line nn)
 "}}}
+
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
