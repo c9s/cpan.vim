@@ -25,6 +25,7 @@
 " Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
 " Site: http://oulixe.us/
 " Date: Sun Sep 19 10:47:15 2009
+" Repository:  http://github.com/c9s/cpan-list.vim
 " Screencast:  http://www.youtube.com/watch?v=erF0NWUIbr4  <cpan.vim>
 "
 " Keywords: perl , cpan , vim
