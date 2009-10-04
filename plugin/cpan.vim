@@ -300,11 +300,10 @@ endf
 
 fun! s:WindowManager.split(position,type,size)
   if ! bufexists( self.buf_nr )
-    if a:type == 'split'
-      let act = 'new'
-    elseif a:type == 'vsplit'
-      let act = 'vnew'
-    endif
+    if a:type == 'split' | let act = 'new' 
+    elseif a:type == 'vsplit' | let act = 'vnew'
+    else | let act = 'new' | endif
+
     exec a:position . ' ' . a:size . act
     let self.buf_nr = bufnr('%')
     setlocal noswapfile
@@ -329,28 +328,37 @@ fun! s:WindowManager.split(position,type,size)
   endif
 endf
 
+" start():
+" after a buffer is initialized , start() function will be called to
+" setup.
 fun! s:WindowManager.start()
   call cursor( 1, 1 )
   startinsert
 endf
 
-
-fun! s:WindowManager.buffer_reload_init()
-
+" buffer_reload_init() 
+" will be triggered after search window opened and the
+" buffer is loaded back , which doesn't need to initiailize.
+fun! s:WindowManager.buffer_reload_init()   
 endf
 
-fun! s:WindowManager.init_buffer()
-
+" init_buffer() 
+" initialize a new buffer for search window.
+fun! s:WindowManager.init_buffer() 
 endf
 
-fun! s:WindowManager.init_syntax()
-
+" init_syntax() 
+" setup the syntax for search window buffer
+fun! s:WindowManager.init_syntax() 
 endf
 
-fun! s:WindowManager.init_mapping()
-
+" init_mapping() 
+" define your mappings for search window buffer
+fun! s:WindowManager.init_mapping() 
 endf
 
+" init_base_mapping()
+" this defines default set mappings
 fun! s:WindowManager.init_basic_mapping()
   imap <buffer>     <Enter> <ESC>j<Enter>
   imap <buffer>     <C-a>   <Esc>0i
@@ -363,6 +371,8 @@ fun! s:WindowManager.init_basic_mapping()
   nnoremap <buffer> <ESC> <C-W>q
 endf
 
+" reder_result()
+" put list into buffer
 fun! s:WindowManager.render_result(matches)
   let @o = join( a:matches , "\n" )
   silent put o
@@ -553,19 +563,6 @@ fun! s:CPANWindow.buffer_reload_init()
 endf
 
 fun! s:CPANWindow.init_mapping()
-  imap <buffer>     <Enter> <ESC>j<Enter>
-  imap <buffer>     <C-t>   <ESC>jt
-  imap <buffer>     <C-a>   <Esc>0i
-  imap <buffer>     <C-e>   <Esc>A
-  imap <buffer>     <C-b>   <Esc>i
-  imap <buffer>     <C-f>   <Esc>a
-
-  " Motion bindings
-  inoremap <buffer> <C-n> <ESC>j
-  nnoremap <buffer> <C-n> j
-  nnoremap <buffer> <C-p> k
-  nnoremap <buffer> <ESC> <C-W>q
-
   " Module action bindings
   imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
   inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
