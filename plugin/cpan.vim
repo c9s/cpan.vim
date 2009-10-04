@@ -71,6 +71,11 @@
 "       6. 
 "           <ESC><ESC> to close cpan window
 "
+"   Ctags Search Window:
+"       press <C-c><C-t> to open ctags search window
+"       press <Enter> to goto tag
+"       press t to goto tag in a new tab
+"
 "   Function Search Window:
 "
 "       press <C-c><C-f> to open function search window
@@ -254,15 +259,19 @@ fun! GotoModuleFileInPaths(mod)
   echomsg "No such module: " . a:mod
 endf
 
+
+fun! GotoTagNewTab(tag)
+  let list = taglist( a:tag )
+  if len(list) == 1 | exec 'tab tag ' . a:tag
+  else | exec 'tab ts ' . a:tag | endif
+endf
+
 fun! GotoTag(tag)
-  resize 60
-  exec 'tag ' . a:tag
+  resize 60 
+  let list = taglist( a:tag )
+  if len(list) == 1 | exec ' tag ' . a:tag
+  else | exec ' ts ' . a:tag | endif
 endf
-
-fun! GotoTagInNewTab(tag)
-  exec 'tab tag '  . a:tag
-endf
-
 
 fun! GotoModule()
   if g:cpan_win_type == 'v'
@@ -433,8 +442,8 @@ let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.tagfiles = [ "tags" ]
 
 fun! s:CtagsWindow.init_mapping()
-  nnoremap <silent> <buffer> t       :call GotoTagInNewTab( getline('.') )<CR>
-  nnoremap <silent> <buffer> <Enter> :call GotoTag( getline('.') )<CR>
+  nnoremap <silent> <buffer> t       :call GotoTagNewTab( getline('.'))<CR>
+  nnoremap <silent> <buffer> <Enter> :call GotoTag( getline('.'))<CR>
 endf
 
 fun! s:CtagsWindow.init_syntax()
