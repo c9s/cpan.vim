@@ -153,6 +153,11 @@ endif
 " }}}
 " Common Functions"{{{
 
+
+fun! FindBin(bin)
+
+endf
+
 fun! GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf
@@ -252,7 +257,7 @@ fun! GotoModule()
 endf
 
 " ==== Window Manager =========================================== {{{
-let s:WindowManager = { 'buf_nr' : -1 }
+let s:WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
 
 fun! s:WindowManager.open(pos,type,size)
   call self.split(a:pos,a:type,a:size)
@@ -335,18 +340,14 @@ endf
 
 " ==== Window Manager =========================================== }}}
 
-
-" &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+" &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 "
 " Features
 "   built-in function name search
 "   perl api function name search
-"
-
 let s:FunctionWindow = copy(s:WindowManager)
 let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
-let s:FunctionWindow.mode = 0
 
 fun! s:FunctionWindow.init_mapping()
   nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
@@ -382,10 +383,6 @@ endf
 fun! s:FunctionWindow.update_search()
   let pattern = getline('.')
   let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
-  "if len(funcs) > g:func_max_result 
-  "  let pkgs = remove( pkgs , 0 , g:cpan_max_result )
-  "endif
-  " XXX: refactor this
   let old = getpos('.')
   silent 2,$delete _
   cal self.render_result( matches )
@@ -394,18 +391,110 @@ fun! s:FunctionWindow.update_search()
 endf
 
 fun! s:FunctionWindow.switch_mode()
+  if self.mode == 1 | let self.mode = 0 | else | let self.mode = self.mode + 1 | endif
+endf
+
+com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
+com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
+nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
+
+" &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"}}}
+
+" &&&& CTags Search Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
+" try to log ./tags or other matches file name
+" or load preconfigured tag files
+" load first 2 columns (tagname and file) from tags file
+"
+" grep tags
+" search tags
+"
+"   Enter to goto tag
+"   t to open the tag in new tabpage
+"
+let s:CtagsWindow = copy( s:WindowManager )
+let s:CtagsWindow.resource = [ ]
+let s:CtagsWindow.tagfiles = [ "tags" ]
+
+fun! s:CtagsWindow.init_mapping()
+  " nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
+endf
+
+fun! s:CtagsWindow.init_syntax()
+  setlocal syntax=tags
+endf
+
+fun! s:CtagsWindow.init_buffer()
+  setfiletype ctagsearch
+  let file = self.find_ctags_file()
+
+  if ! file 
+    let path = input("tags file not found. enter your source path to generate ctags:")
+    self.generate_ctags_file(path)
+    return 
+  endif
+
+  echon "Loading TagList..."
+  let self.resource = self.read_tags(file)   " XXX let it be configurable
+  echon "Done"
+  cal self.render_result( remove(copy(self.resource),0,100) )  " just take out first 100 items
+
+  " mapping search
+  autocmd CursorMovedI <buffer> call s:CtagsWindow.update_search()
+
+  silent file CtagsSearch
+endf
+
+fun! s:CtagsWindow.generate_ctags_file(path)
+  call system("ctags -f tags -R path")
+endf
+
+fun! s:CtagsWindow.find_ctags_file()
+  for file in self.tagfiles 
+    if filereadable( file ) | return file | endif
+  endfor
+endf
+
+fun! s:CtagsWindow.read_tags(file)
+  let tags = readfile(a:file)
+  let r = [ ] | for t in tags 
+    let [c,f,p] = split(t,"\s+")
+    "call insert( r ,  join([c,f], "\t") )
+    call insert(r,c)
+  endfor | retu r
+endf
+
+fun! s:CtagsWindow.buffer_reload_init()
+  call setline(1,'')
+  call cursor(1,1)
+  startinsert
+endf
+
+fun! s:CtagsWindow.update_search()
+  let pattern = getline('.')
+  let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
+  if len(matches) > 100 
+    remove( matches , 0 , 100 )
+  endif
+
+  let old = getpos('.')
+  silent 2,$delete _
+  cal self.render_result( matches )
+  cal setpos('.',old)
+  startinsert
+endf
+
+fun! s:CtagsWindow.switch_mode()
   if self.mode == 1 
     let self.mode = 0
   else 
     let self.mode = self.mode + 1
   endif
-
 endf
 
-com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
-com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
+com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
+nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
 
-nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
+"}}}
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
@@ -415,8 +504,8 @@ fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
   cal PrepareInstalledCPANModuleCache()
   cal self.render_result( g:cpan_installed_pkgs )
-  autocmd CursorMovedI <buffer>        call s:CPANWindow.update_search()
-  autocmd BufWinLeave  <buffer>         call s:CPANWindow.close()
+  autocmd CursorMovedI <buffer>       call s:CPANWindow.update_search()
+  autocmd BufWinLeave  <buffer>       call s:CPANWindow.close()
   call self.refresh_buffer_name()
 endf
 
