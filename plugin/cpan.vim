@@ -155,6 +155,12 @@ endif
 " Common Functions"{{{
 
 
+fun! s:echo(msg)
+  redraw
+  echomsg a:msg
+endf
+
+" XXX
 fun! FindBin(bin)
 
 endf
@@ -247,6 +253,16 @@ fun! GotoModuleFileInPaths(mod)
   endfor
   echomsg "No such module: " . a:mod
 endf
+
+fun! GotoTag(tag)
+  resize 60
+  exec 'tag ' . a:tag
+endf
+
+fun! GotoTagInNewTab(tag)
+  exec 'tab tag '  . a:tag
+endf
+
 
 fun! GotoModule()
   if g:cpan_win_type == 'v'
@@ -417,7 +433,8 @@ let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.tagfiles = [ "tags" ]
 
 fun! s:CtagsWindow.init_mapping()
-  " nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
+  nnoremap <silent> <buffer> t       :call GotoTagInNewTab( getline('.') )<CR>
+  nnoremap <silent> <buffer> <Enter> :call GotoTag( getline('.') )<CR>
 endf
 
 fun! s:CtagsWindow.init_syntax()
@@ -428,16 +445,20 @@ fun! s:CtagsWindow.init_buffer()
   setfiletype ctagsearch
   let file = self.find_ctags_file()
 
-  if ! file 
-    let path = input("tags file not found. enter your source path to generate ctags:")
-    self.generate_ctags_file(path)
-    return 
+  if ! filereadable(file)
+    let path = expand(input("tags file not found. enter your source path to generate ctags:" , "" ,  "dir"))
+    " if ! path | return | endif
+    cal s:echo( "Generating..." )
+    let file = self.generate_ctags_file(path)
   endif
 
-  echon "Loading TagList..."
+  cal s:echo( "Loading TagList..." )
   let self.resource = self.read_tags(file)   " XXX let it be configurable
-  echon "Done"
+
+  cal s:echo( "Rendering..." )
   cal self.render_result( remove(copy(self.resource),0,100) )  " just take out first 100 items
+
+  cal s:echo( "Ready" )
 
   " mapping search
   autocmd CursorMovedI <buffer> call s:CtagsWindow.update_search()
@@ -446,7 +467,8 @@ fun! s:CtagsWindow.init_buffer()
 endf
 
 fun! s:CtagsWindow.generate_ctags_file(path)
-  call system("ctags -f tags -R path")
+  call system("ctags -f tags -R " . a:path)
+  return "tags"
 endf
 
 fun! s:CtagsWindow.find_ctags_file()
@@ -456,12 +478,8 @@ fun! s:CtagsWindow.find_ctags_file()
 endf
 
 fun! s:CtagsWindow.read_tags(file)
-  let tags = readfile(a:file)
-  let r = [ ] | for t in tags 
-    let [c,f,p] = split(t,"\s+")
-    "call insert( r ,  join([c,f], "\t") )
-    call insert(r,c)
-  endfor | retu r
+  let ret = system("cat " . a:file . " | grep -v '^!'  | cut -f 1 | sort | uniq")
+  return split(ret,'\n')
 endf
 
 fun! s:CtagsWindow.buffer_reload_init()
@@ -474,7 +492,7 @@ fun! s:CtagsWindow.update_search()
   let pattern = getline('.')
   let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
   if len(matches) > 100 
-    remove( matches , 0 , 100 )
+    call remove( matches , 0 , 100 )
   endif
 
   let old = getpos('.')
