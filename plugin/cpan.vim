@@ -754,6 +754,8 @@ fun! OpenPerldocWindow(name,param)
   resize 50
   vertical resize 82
   autocmd BufWinLeave <buffer> call ClosePerldocWindow()
+
+  nmap <buffer> <ESC> <C-W>q
 endf
 
 fun! ClosePerldocWindow()
