@@ -318,6 +318,7 @@ fun! s:WindowManager.split(position,type,size)
     call self.init_syntax()
     call self.init_basic_mapping()
     call self.init_mapping()
+
     call self.start()
   elseif bufwinnr(self.buf_nr) == -1 
     exec a:position . ' ' . a:size . a:type
@@ -360,7 +361,6 @@ endf
 " init_base_mapping()
 " this defines default set mappings
 fun! s:WindowManager.init_basic_mapping()
-  mapclear <buffer>
   imap <buffer>     <Enter> <ESC>j<Enter>
   imap <buffer>     <C-a>   <Esc>0i
   imap <buffer>     <C-e>   <Esc>A
@@ -758,7 +758,7 @@ fun! ClosePerldocWindow()
   endif
   bw
   "silent 0f
-  close
+  "close
 endf
 "}}}
 

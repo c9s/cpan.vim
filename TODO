@@ -26,3 +26,8 @@ x built-in function search
     and current file
 
 * Module::Name completion
+
+* when open serach window in vertical
+    <enter> should open file on right side 
+
+  for horizontal split , should open file in the bottom
