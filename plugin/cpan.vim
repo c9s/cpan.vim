@@ -566,7 +566,7 @@ endf
 
 fun! s:CPANWindow.init_mapping()
   " Module action bindings
-  imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
+  map <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
   inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
   nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
@@ -751,6 +751,7 @@ fun! OpenPerldocWindow(name,param)
 endf
 
 fun! ClosePerldocWindow()
+  " resize back
   if g:cpan_win_type == 'v'
     exec 'vertical resize ' . g:cpan_win_width
   else
