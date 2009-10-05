@@ -383,6 +383,7 @@ endf
 fun! s:WindowManager.close()
   " since we call buffer back , we dont need to remove buffername
   " silent 0f
+  redraw
 endf
 
 " ==== Window Manager =========================================== }}}
@@ -766,6 +767,7 @@ fun! ClosePerldocWindow()
     exec 'resize ' . g:cpan_win_height
   endif
   bw
+  redraw
 endf
 "}}}
 
