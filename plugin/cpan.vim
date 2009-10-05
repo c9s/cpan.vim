@@ -376,8 +376,8 @@ endf
 " reder_result()
 " put list into buffer
 fun! s:WindowManager.render_result(matches)
-  let @o = join( a:matches , "\n" )
-  silent put o
+  let r=join( a:matches , "\n" )
+  silent put=r
 endf
 
 fun! s:WindowManager.close()
@@ -460,16 +460,15 @@ nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 "
 let s:CtagsWindow = copy( s:WindowManager )
 let s:CtagsWindow.resource = [ ]
-let s:CtagsWindow.default_ctags = 'tags'
-let s:CtagsWindow.tagfiles = [ "tags" ]
+let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write 
+let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
 
 fun! s:CtagsWindow.init_mapping()
-  nnoremap <silent> <buffer> t       :call GotoTagNewTab( getline('.'))<CR>
-  nnoremap <silent> <buffer> <Enter> :call GotoTag( getline('.'))<CR>
+  nnoremap <silent> <buffer> t       :call GotoTagNewTab(getline('.'))<CR>
+  nnoremap <silent> <buffer> <Enter> :call GotoTag(getline('.'))<CR>
   nnoremap <silent> <buffer> <C-R>   :GenCtags<CR>
 endf
 
-com! GenCtags   :call s:CtagsWindow.input_path_for_ctags()
 
 fun! s:CtagsWindow.init_syntax()
   setlocal syntax=tags
@@ -548,8 +547,8 @@ fun! s:CtagsWindow.switch_mode()
 endf
 
 com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
+com! GenCtags               :call s:CtagsWindow.input_path_for_ctags()
 nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
-
 "}}}
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
@@ -725,7 +724,6 @@ nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
-
 
 " &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
