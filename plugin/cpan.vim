@@ -460,15 +460,26 @@ nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 "
 let s:CtagsWindow = copy( s:WindowManager )
 let s:CtagsWindow.resource = [ ]
+let s:CtagsWindow.default_ctags = 'tags'
 let s:CtagsWindow.tagfiles = [ "tags" ]
 
 fun! s:CtagsWindow.init_mapping()
   nnoremap <silent> <buffer> t       :call GotoTagNewTab( getline('.'))<CR>
   nnoremap <silent> <buffer> <Enter> :call GotoTag( getline('.'))<CR>
+  nnoremap <silent> <buffer> <C-R>   :GenCtags<CR>
 endf
+
+com! GenCtags   :call s:CtagsWindow.input_path_for_ctags()<CR>
 
 fun! s:CtagsWindow.init_syntax()
   setlocal syntax=tags
+endf
+
+fun! s:CtagsWindow.input_path_for_ctags()
+    let path = expand(input("tags file not found. enter your source path to generate ctags:" , "" ,  "dir"))
+    if ! path | return | endif
+    cal s:echo( "Generating..." )
+    return self.generate_ctags_file(path)
 endf
 
 fun! s:CtagsWindow.init_buffer()
@@ -476,10 +487,7 @@ fun! s:CtagsWindow.init_buffer()
   let file = self.find_ctags_file()
 
   if ! filereadable(file)
-    let path = expand(input("tags file not found. enter your source path to generate ctags:" , "" ,  "dir"))
-    " if ! path | return | endif
-    cal s:echo( "Generating..." )
-    let file = self.generate_ctags_file(path)
+    let file = self.input_path_for_ctags()
   endif
 
   cal s:echo( "Loading TagList..." )
@@ -497,8 +505,8 @@ fun! s:CtagsWindow.init_buffer()
 endf
 
 fun! s:CtagsWindow.generate_ctags_file(path)
-  call system("ctags -f tags -R " . a:path)
-  return "tags"
+  call system("ctags -f " . self.default_ctags . " -R " . a:path)
+  return self.default_ctags
 endf
 
 fun! s:CtagsWindow.find_ctags_file()
@@ -568,15 +576,15 @@ fun! s:CPANWindow.init_mapping()
   " Module action bindings
   imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
   nmap <silent> <buffer>     <Tab>   :SwitchCPANWindowMode<CR>
-  inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
-  nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
+  inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
+  nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-  nnoremap <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
-  nnoremap <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
+  nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
+  nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
-  nnoremap <buffer> <Enter> :call GotoModule()<CR>
-  nnoremap <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
-  nnoremap <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+  nnoremap <silent> <buffer> <Enter> :call GotoModule()<CR>
+  nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+  nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
 fun! s:CPANWindow.init_syntax()
