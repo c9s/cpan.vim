@@ -469,17 +469,14 @@ fun! s:CtagsWindow.init_mapping()
   nnoremap <silent> <buffer> <C-R>   :GenCtags<CR>
 endf
 
-com! GenCtags   :call s:CtagsWindow.input_path_for_ctags()<CR>
+com! GenCtags   :call s:CtagsWindow.input_path_for_ctags()
 
 fun! s:CtagsWindow.init_syntax()
   setlocal syntax=tags
 endf
 
 fun! s:CtagsWindow.input_path_for_ctags()
-    let path = expand(input("tags file not found. enter your source path to generate ctags:" , "" ,  "dir"))
-    if ! path | return | endif
-    cal s:echo( "Generating..." )
-    return self.generate_ctags_file(path)
+  retu self.generate_ctags_file(expand(input("tags file not found. enter your source path to generate ctags:" , "" ,  "dir")))
 endf
 
 fun! s:CtagsWindow.init_buffer()
@@ -498,15 +495,17 @@ fun! s:CtagsWindow.init_buffer()
 
   cal s:echo( "Ready" )
 
-  " mapping search
   autocmd CursorMovedI <buffer> call s:CtagsWindow.update_search()
 
   silent file CtagsSearch
 endf
 
 fun! s:CtagsWindow.generate_ctags_file(path)
-  call system("ctags -f " . self.default_ctags . " -R " . a:path)
-  return self.default_ctags
+  let f = self.default_ctags
+  cal s:echo("Generating...")
+  call system("ctags -f " . f . " -R " . a:path)
+  cal s:echo("Done")
+  return f
 endf
 
 fun! s:CtagsWindow.find_ctags_file()
