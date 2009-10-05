@@ -566,7 +566,8 @@ endf
 
 fun! s:CPANWindow.init_mapping()
   " Module action bindings
-  map <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
+  imap <silent> <buffer>     <Tab>   <Esc>:SwitchCPANWindowMode<CR>
+  nmap <silent> <buffer>     <Tab>   :SwitchCPANWindowMode<CR>
   inoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
   nnoremap <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
