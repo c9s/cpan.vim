@@ -766,8 +766,6 @@ fun! ClosePerldocWindow()
     exec 'resize ' . g:cpan_win_height
   endif
   bw
-  "silent 0f
-  "close
 endf
 "}}}
 
