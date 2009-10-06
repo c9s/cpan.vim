@@ -2,6 +2,7 @@
 
 == features ==
 
+
 x install module 
 
 x uninstall module
@@ -26,6 +27,8 @@ x built-in function search
     and current file
 
 * Module::Name completion
+* packages are sub class should be noted. that 
+    we can not query dist web page, or check if package has pod documented
 
 * when open serach window in vertical
     <enter> should open file on right side 
