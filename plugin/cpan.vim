@@ -667,7 +667,7 @@ fu! PrepareCPANModuleCache()
 endf
 fu! PrepareInstalledCPANModuleCache()
   if len( g:cpan_installed_pkgs ) == 0 
-    echon "preparing installed cpan module list..."
+    call s:echo("preparing installed cpan module list...")
     let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
   endif
 endf
@@ -692,12 +692,13 @@ endf
 fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    echon "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
+    echo "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+          \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . g:cpan_installed_cache )
-    echon "done"
+    " sed  's/^package //' | sed 's/;$//'
+    echo "ready"
   endif
   return readfile( g:cpan_installed_cache )
 endf
