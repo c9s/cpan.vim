@@ -589,7 +589,7 @@ endf
 fun! s:CPANWindow.init_syntax()
   if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
     "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-    hi Background ctermbg=darkblue
+    "hi Background ctermbg=darkblue
   endif
 endf
 
@@ -755,7 +755,6 @@ fun! OpenPerldocWindow(name,param)
   resize 50
   vertical resize 82
   autocmd BufWinLeave <buffer> call ClosePerldocWindow()
-
   nmap <buffer> <ESC> <C-W>q
 endf
 
@@ -908,6 +907,7 @@ nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
+
 
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)

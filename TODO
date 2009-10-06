@@ -31,3 +31,10 @@ x built-in function search
     <enter> should open file on right side 
 
   for horizontal split , should open file in the bottom
+
+* for ctags search window
+    tab key can switch search mode 
+        for example, search function name , package name 
+            or filename , variable ... etc
+
+        should display refered file and line number
