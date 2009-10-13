@@ -69,6 +69,20 @@ fun! s:PLCompletionWindow.init_buffer()
   setfiletype PLCompletionWindow
   "cal PrepareInstalledCPANModuleCache()
   "cal self.render_result( g:cpan_installed_pkgs )
+
+  " if it's from $self or $class, parse subroutines from current file
+  " and parse parent packages , the maxima is by class depth
+
+
+  " if it's from PACKAGE::SOMETHING , find the package file , and parse
+  " subrouteins from the file , and the parent packages
+
+
+  " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
+  " the variables from the file . and the parent packages
+
+
+
   autocmd CursorMovedI <buffer>       call s:PLCompletionWindow.update_search()
   autocmd BufWinLeave  <buffer>       call s:PLCompletionWindow.close()
   call self.refresh_buffer_name()
