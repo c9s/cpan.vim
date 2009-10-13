@@ -70,8 +70,6 @@ fun! s:PLCompletionWindow.open(pos,type,size,from)
   let self.from = a:from
 endf
 
-endf
-
 fun! s:PLCompletionWindow.init_buffer()
   setfiletype PLCompletionWindow
   "cal PrepareInstalledCPANModuleCache()
