@@ -65,6 +65,13 @@ source plugin/window.vim
 
 let s:PLCompletionWindow = copy(WindowManager)
 
+fun! s:PLCompletionWindow.open(pos,type,size,from)
+  call self.split(a:pos,a:type,a:size)
+  let self.from = a:from
+endf
+
+endf
+
 fun! s:PLCompletionWindow.init_buffer()
   setfiletype PLCompletionWindow
   "cal PrepareInstalledCPANModuleCache()
@@ -87,6 +94,11 @@ fun! s:PLCompletionWindow.init_buffer()
   autocmd BufWinLeave  <buffer>       call s:PLCompletionWindow.close()
   call self.refresh_buffer_name()
 endf
+
+com! OpenPLCompletionWindow        :call s:PLCompletionWindow.open('botright', 'split',10,getline('.'))
+inoremap <C-f>  <ESC>:OpenPLCompletionWindow<CR>
+
+
 "
 "fun! s:PLCompletionWindow.buffer_reload_init()
 "  call self.refresh_buffer_name()
