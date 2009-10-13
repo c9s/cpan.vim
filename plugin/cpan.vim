@@ -291,109 +291,14 @@ fun! FindPerlPackageFiles()
   return pkgs
 endf
 
-" ==== Window Manager =========================================== {{{
-let s:WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
-
-fun! s:WindowManager.open(pos,type,size)
-  call self.split(a:pos,a:type,a:size)
-endf
-
-fun! s:WindowManager.split(position,type,size)
-  if ! bufexists( self.buf_nr )
-    if a:type == 'split' | let act = 'new' 
-    elseif a:type == 'vsplit' | let act = 'vnew'
-    else | let act = 'new' | endif
-
-    exec a:position . ' ' . a:size . act
-    let self.buf_nr = bufnr('%')
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal nowrap
-    setlocal cursorline
-    setlocal nonumber
-    setlocal fdc=0
-    call self.init_buffer()
-    call self.init_syntax()
-    call self.init_basic_mapping()
-    call self.init_mapping()
-
-    call self.start()
-  elseif bufwinnr(self.buf_nr) == -1 
-    exec a:position . ' ' . a:size . a:type
-    execute self.buf_nr . 'buffer'
-    call self.buffer_reload_init()
-  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
-    execute bufwinnr(self.buf_nr) . 'wincmd w'
-  endif
-endf
-
-" start():
-" after a buffer is initialized , start() function will be called to
-" setup.
-fun! s:WindowManager.start()
-  call cursor( 1, 1 )
-  startinsert
-endf
-
-" buffer_reload_init() 
-" will be triggered after search window opened and the
-" buffer is loaded back , which doesn't need to initiailize.
-fun! s:WindowManager.buffer_reload_init()   
-endf
-
-" init_buffer() 
-" initialize a new buffer for search window.
-fun! s:WindowManager.init_buffer() 
-endf
-
-" init_syntax() 
-" setup the syntax for search window buffer
-fun! s:WindowManager.init_syntax() 
-endf
-
-" init_mapping() 
-" define your mappings for search window buffer
-fun! s:WindowManager.init_mapping() 
-endf
-
-" init_base_mapping()
-" this defines default set mappings
-fun! s:WindowManager.init_basic_mapping()
-  imap <buffer>     <Enter> <ESC>j<Enter>
-  imap <buffer>     <C-a>   <Esc>0i
-  imap <buffer>     <C-e>   <Esc>A
-  imap <buffer>     <C-b>   <Esc>i
-  imap <buffer>     <C-f>   <Esc>a
-  inoremap <buffer> <C-n> <ESC>j
-  nnoremap <buffer> <C-n> j
-  nnoremap <buffer> <C-p> k
-  nnoremap <buffer> <ESC> <C-W>q
-  inoremap <buffer> <C-c> <ESC><C-W>q
-endf
-
-" reder_result()
-" put list into buffer
-fun! s:WindowManager.render_result(matches)
-  let r=join( a:matches , "\n" )
-  silent put=r
-endf
-
-fun! s:WindowManager.close()
-  " since we call buffer back , we dont need to remove buffername
-  " silent 0f
-  redraw
-endf
-
-" ==== Window Manager =========================================== }}}
+source plugin/window.vim
 
 " &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 "
 " Features
 "   built-in function name search
 "   perl api function name search
-let s:FunctionWindow = copy(s:WindowManager)
+let s:FunctionWindow = copy(WindowManager)
 let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
 
@@ -459,7 +364,7 @@ nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 "   Enter to goto tag
 "   t to open the tag in new tabpage
 "
-let s:CtagsWindow = copy( s:WindowManager )
+let s:CtagsWindow = copy( WindowManager )
 let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write 
 let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
@@ -554,7 +459,7 @@ nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
-let s:CPANWindow = copy(s:WindowManager)
+let s:CPANWindow = copy(WindowManager)
 
 fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
@@ -844,65 +749,6 @@ fu! GetCompBase()
 endf
 "}}}
 
-" XXX: implement this
-" Perl Completion Features:"{{{
-"
-" when user type '$self' or '$class' , press [key] to trigger completion function
-"   (or just map '->' key to trigger completion function)
-"           
-"           the completion should include:
-"               function name
-"               accessor
-"
-"   then it should complete the '->' and open a completion window 
-"   and list all matched items
-" 
-" when user type $App::Class:: , then press [key] to trigger completion function
-"
-"           the completion should include:
-"               variable name
-"
-" when user type App::Class:: , then press [key] to trigger completion function
-"
-"           the completion should include:
-"               function name
-"               constants
-"
-" when user typing, it should automatically update the line (option)
-" and update completion result in the bottom window , and highlight 
-" the matched part
-"
-" user type C-n , C-p to select item to complete
-" then press <Enter> to complete with the selected item.
-" after all , the completion window should be closed
-"
-" Completion Window:
-"
-" there are more than 1 parts to list completion in perl completion window
-" === BaseClass    (from 'use base qw//')
-" = accessors =
-" = variables =
-" = constants =
-" = functions =
-"
-" === CurrentClass (package [ ];)
-" = accessors =
-" = variables =
-" = constants = 
-" = functions =
-"
-"
-" Function List Item Format:
-"
-" App::Base::Class
-" [var name]
-" [function name]  (line nn)
-" [function name]  (line nn)
-"
-" App::Class
-" [var name]
-" [function name]  (line nn)
-"}}}
 
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
 
