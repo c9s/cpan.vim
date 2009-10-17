@@ -63,7 +63,7 @@ runtime! plugin/window.vim
 let g:plc_max_entries_per_class = 5
 
 let g:PLCompletionWindow = copy( WindowManager )
-let g:PLCompletionWindow.resource = { }
+let g:PLCompletionWindow.resource = [ ]
 
 fun! g:PLCompletionWindow.open(pos,type,size,from)
   let self.from = a:from   " self.from = getline('.')
@@ -108,14 +108,16 @@ fun! g:PLCompletionWindow.init_buffer()
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
   if self.comp_refer_base =~ '\$\(self\|class\)' 
-    let self.resource[ "self" ] = { 'refer': '[class]' , 'functions': [ ] }
-    let self.resource[ "self" ].functions = self.grep_file_functions( self.current_file )
+    let _self = { 'class': 'self' , 'refer': '' , 'functions': [ ] }
+    let _self.functions = self.grep_file_functions( self.current_file )
+    call insert(self.resource, _self )
 
     " grep function from base class
     let base_classes = libperl#find_base_classes( self.current_file ) 
     for [class,class_refer,path] in base_classes
-      let self.resource[ class ] = { 'refer': class_refer , 'functions': [ ] }
-      let self.resource[ class ].functions = self.grep_file_functions( path )
+      let class_comp = { 'class': class , 'refer': class_refer , 'functions': [ ] }
+      let class_comp.functions = self.grep_file_functions( path )
+      call insert( self.resource , class_comp )
     endfor
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
@@ -123,8 +125,11 @@ fun! g:PLCompletionWindow.init_buffer()
   elseif self.comp_refer_base =~ g:libperl#pkg_token_pattern 
     let pkg = self.comp_refer_base
     let filepath = libperl#GetModuleFilePath(pkg)
-    let self.resource[ pkg ] = { 'refer': '' ,  'functions': [ ] }
-    let self.resource[ pkg ].functions = self.grep_file_functions( filepath )
+
+    let class_comp = { 'class': pkg , 'refer': '' , 'functions': [ ] }
+    let class_comp.functions = self.grep_file_functions( filepath )
+    call insert( self.resource , class_comp )
+
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
@@ -160,13 +165,15 @@ endf
 
 " when pattern is empty , should display all entries
 fun! g:PLCompletionWindow.grep_entries(entries,pattern) 
-  let result = { }
-  for class in keys( a:entries )
-    let result[ class ] = copy(a:entries[ class ])
-    let result[ class ].functions = filter( copy(result[class].functions)  , 'v:val =~ ''^' . a:pattern . '''' )
-    if strlen( a:pattern ) > 0 && len( result[class].functions ) > g:plc_max_entries_per_class 
-      let result[class].functions = remove( result[class].functions , 0 , g:plc_max_entries_per_class )
+  let result = [ ]
+  for entry in a:entries
+    let entry_result = copy( entry )
+    let entry_result.functions = filter( copy( entry_result.functions )  , 'v:val =~ ''^' . a:pattern . '''' )
+
+    if strlen( a:pattern ) > 0 && len( entry_result.functions ) > g:plc_max_entries_per_class 
+      let entry_result.functions = remove( entry_result.functions , 0 , g:plc_max_entries_per_class )
     endif
+    call insert( result , entry_result )
   endfor
   return result
 endf
@@ -174,8 +181,12 @@ endf
 fun! g:PLCompletionWindow.render_result(matches)
   let out = ''
   let f_pad = "\n  "
-  for class_name in keys( a:matches ) 
-    let out .= class_name . ' isa:' . a:matches[class_name].refer . f_pad . join( a:matches[class_name].functions ,  f_pad ) . "\n"
+  for entry in a:matches
+    let out .= entry.class 
+    if entry.refer 
+      let out .= ' isa:' . entry.refer
+    endif 
+    let out .= f_pad . join( entry.functions ,  f_pad ) . "\n"
   endfor
   silent put=out
 endf

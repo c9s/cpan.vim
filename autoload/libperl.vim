@@ -140,6 +140,7 @@ fun! libperl#find_base_classes(file)
     return [ ]
   endif
   let out = system('perl ' . script_path . ' ' . a:file)
+  echo out
   let classes = [ ]
   for l in split(out,"\n") 
     let [class,refer,path] = split(l,' ')
