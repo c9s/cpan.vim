@@ -1,4 +1,4 @@
-" vim:fdm=marker:et:sw=2:
+" vim:fdm=syntax:fdl=1:et:sw=2:
 " Perl Completion Features:"{{{
 "
 " when user type '$self' or '$class' , press [key] to trigger completion function
@@ -95,7 +95,7 @@ fun! g:PLCompletionWindow.init_buffer()
     let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
 
     " grep function from base class
-    let base_classes = self.find_base_class_files( self.current_file ) 
+    let base_classes = libperl#find_base_classes( self.current_file ) 
     for [class,path] in base_classes
       let self.resource[ class ] = self.grep_file_functions( path )
     endfor
@@ -128,16 +128,6 @@ endf
 fun! g:PLCompletionWindow.start()
   call cursor(2,1)
   startinsert
-endf
-
-fun! g:PLCompletionWindow.find_base_class_files(file)
-  let out = system('perl ' . expand('$HOME') . '/.vim/bin/find_base_classes.pl ' . a:file)
-  let classes = [ ]
-  for l in split(out,"\n") 
-    let [class,path] = split(l,' ')
-    call insert(classes,[ class,path ])
-  endfor
-  return classes
 endf
 
 " when pattern is empty , should display all entries

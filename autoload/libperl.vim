@@ -125,7 +125,18 @@ fu! libperl#GetPackageSourceListPath()
   return
 endf
 
+fun! libperl#find_base_classes(file)
+  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl '
+  if ! executable( script_path )
+    echoerr 'can not execute ' . script_path
+    return [ ]
+  endif
 
-
-
-
+  let out = system('perl ' . script_path . ' ' . a:file)
+  let classes = [ ]
+  for l in split(out,"\n") 
+    let [class,path] = split(l,' ')
+    call insert(classes,[ class,path ])
+  endfor
+  return classes
+endf
