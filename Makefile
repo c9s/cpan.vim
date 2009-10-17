@@ -9,6 +9,8 @@ install:
 		cp -v plugin/cpan.vim  ~/.vim/plugin/
 		mkdir -p ~/.vim/perl
 		cp perl-functions ~/.vim/perl/
+		mkdir -p ~/.vim/bin/
+		cp utils/find_base_classes.pl ~/.vim/bin/
 
 doc:
 	vim plugin/cpan.vim -c "call cursor(1,1)" -c "exec '1,'.search('^\n').'write! README'" -c ":q"

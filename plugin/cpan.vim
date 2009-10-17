@@ -847,6 +847,8 @@ endf
 
 " require cpan.vim
 
+let g:plc_max_entries_per_class = 5
+
 let g:PLCompletionWindow = copy(WindowManager)
 let g:PLCompletionWindow.resource = { }
 
@@ -873,6 +875,12 @@ fun! g:PLCompletionWindow.init_buffer()
     echo self.current_file 
     let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
 
+    " grep function from base class
+    let base_classes = self.find_base_class_files( self.current_file ) 
+    for [class,path] in base_classes
+      let self.resource[ class ] = self.grep_file_functions( path )
+    endfor
+
     let matches = self.grep_entries( self.resource , '' )
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
@@ -894,10 +902,26 @@ fun! g:PLCompletionWindow.init_buffer()
   " call self.refresh_buffer_name()
 endf
 
+fun! g:PLCompletionWindow.find_base_class_files(file)
+  let out = system('perl ' . expand('$HOME') . '/.vim/bin/find_base_classes.pl ' . a:file)
+  let lines = split(out,"\n")
+  let classes = [ ]
+  for l in lines 
+    let [class,path] = split(l,' ')
+    call insert(classes,[ class,path ])
+  endfor
+  return classes
+endf
+
+
+" for pattern is null , should display all entries
 fun! g:PLCompletionWindow.grep_entries(entries,pattern) 
   let result = { }
   for k in keys( a:entries )
     let result[ k ] = filter( copy( a:entries[ k ] ) , 'v:val =~ ''^' . a:pattern . '''' )
+    if strlen( a:pattern ) > 0 && len( result[k] ) > g:plc_max_entries_per_class 
+      let result[k] = remove( result[k] , 0 , g:plc_max_entries_per_class )
+    endif
   endfor
   return result
 endf
@@ -922,9 +946,6 @@ endf
 fun! g:PLCompletionWindow.update_search()
   let pattern = getline('.')
   let matches = self.grep_entries( self.resource , pattern )
-  if len(matches) > 100 
-    call remove( matches , 0 , 100 )
-  endif
   let old = getpos('.')
   silent 2,$delete _
   cal self.render_result( matches )
@@ -975,12 +996,14 @@ fun! g:PLCompletionWindow.init_mapping()
 
   " nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
   " nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
-  nnoremap <script> <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
+  nnoremap <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
+  inoremap <silent> <buffer> <Enter> <ESC>jj:call g:PLCompletionWindow.do_complete()<CR>
   " nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
   " nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
-"
-"
+
+
+
 "fun! s:PLCompletionWindow.switch_mode()
 "  let g:cpan_win_mode = g:cpan_win_mode + 1
 "  if g:cpan_win_mode == 4
