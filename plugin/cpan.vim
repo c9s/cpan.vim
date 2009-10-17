@@ -398,9 +398,9 @@ endf
 
 " &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 "
-" Features
+" Feature
 "   built-in function name search
-"   perl api function name search
+"
 let s:FunctionWindow = copy(WindowManager)
 let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
@@ -410,14 +410,10 @@ fun! s:FunctionWindow.init_mapping()
 endf
 
 fun! s:FunctionWindow.init_syntax()
-  "if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-  "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-  "hi Background ctermbg=darkblue
   syn match PerlFunctionName "^\S\+"
   syn keyword PerlType LIST FILEHANDLE VARIABLE FILEHANDLE EXPR FILENAME DIRHANDLE SOCKET NAME BLOCK NUMBER HASH ARRAY
   hi link PerlFunctionName Identifier
   hi link PerlType Type
-  "endif
 endf
 
 fun! s:FunctionWindow.init_buffer()
@@ -437,7 +433,7 @@ fun! s:FunctionWindow.buffer_reload_init()
 endf
 
 fun! s:FunctionWindow.update_search()
-  let pattern = getline('.')
+  let pattern = getline(1)
   let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
   let old = getpos('.')
   silent 2,$delete _
