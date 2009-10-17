@@ -108,12 +108,14 @@ fun! g:PLCompletionWindow.init_buffer()
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
   if self.comp_refer_base =~ '\$\(self\|class\)' 
-    let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
+    let self.resource[ "self" ] = { 'refer': '[class]' , 'functions': [ ] }
+    let self.resource[ "self" ].functions = self.grep_file_functions( self.current_file )
 
     " grep function from base class
     let base_classes = libperl#find_base_classes( self.current_file ) 
-    for [class,path] in base_classes
-      let self.resource[ class ] = self.grep_file_functions( path )
+    for [class,class_refer,path] in base_classes
+      let self.resource[ class ] = { 'refer': class_refer , 'functions': [ ] }
+      let self.resource[ class ].functions = self.grep_file_functions( path )
     endfor
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
@@ -121,7 +123,8 @@ fun! g:PLCompletionWindow.init_buffer()
   elseif self.comp_refer_base =~ g:libperl#pkg_token_pattern 
     let pkg = self.comp_refer_base
     let filepath = libperl#GetModuleFilePath(pkg)
-    let self.resource[ pkg ] = self.grep_file_functions( filepath )
+    let self.resource[ pkg ] = { 'refer': '' ,  'functions': [ ] }
+    let self.resource[ pkg ].functions = self.grep_file_functions( filepath )
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
@@ -143,7 +146,6 @@ fun! g:PLCompletionWindow.init_buffer()
 
   autocmd CursorMovedI <buffer>       call g:PLCompletionWindow.update_search()
   autocmd BufWinLeave  <buffer>       call g:PLCompletionWindow.close()
-  " call self.refresh_buffer_name()
   silent file PerlCompletion
 endf
 
@@ -159,10 +161,11 @@ endf
 " when pattern is empty , should display all entries
 fun! g:PLCompletionWindow.grep_entries(entries,pattern) 
   let result = { }
-  for k in keys( a:entries )
-    let result[ k ] = filter( copy( a:entries[ k ] ) , 'v:val =~ ''^' . a:pattern . '''' )
-    if strlen( a:pattern ) > 0 && len( result[k] ) > g:plc_max_entries_per_class 
-      let result[k] = remove( result[k] , 0 , g:plc_max_entries_per_class )
+  for class in keys( a:entries )
+    let result[ class ] = copy(a:entries[ class ])
+    let result[ class ].functions = filter( copy(result[class].functions)  , 'v:val =~ ''^' . a:pattern . '''' )
+    if strlen( a:pattern ) > 0 && len( result[class].functions ) > g:plc_max_entries_per_class 
+      let result[class].functions = remove( result[class].functions , 0 , g:plc_max_entries_per_class )
     endif
   endfor
   return result
@@ -171,8 +174,8 @@ endf
 fun! g:PLCompletionWindow.render_result(matches)
   let out = ''
   let f_pad = "\n  "
-  for k in keys( a:matches ) 
-    let out .= k . f_pad . join( a:matches[k] ,  f_pad ) . "\n"
+  for class_name in keys( a:matches ) 
+    let out .= class_name . ' isa:' . a:matches[class_name].refer . f_pad . join( a:matches[class_name].functions ,  f_pad ) . "\n"
   endfor
   silent put=out
 endf
@@ -229,5 +232,9 @@ fun! g:PLCompletionWindow.init_mapping()
   inoremap <silent> <buffer> <C-k> <ESC>:call search('^[a-zA-Z]','b')<CR>
 endf
 
-com! OpenPLCompletionWindow        :call g:PLCompletionWindow.open('botright', 'split',10,getline('.'))
+let g:plc_window_height = 14
+let g:plc_window_position = 'botright'
+
+com! OpenPLCompletionWindow                 :call g:PLCompletionWindow.open(g:plc_window_position, 'split',g:plc_window_height,getline('.'))
 inoremap <silent> <C-x><C-x>                <ESC>:OpenPLCompletionWindow<CR>
+

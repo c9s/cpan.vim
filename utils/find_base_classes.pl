@@ -49,18 +49,21 @@ sub verbose { print STDERR @_,"\n" }
 
 sub traverse_parent {
     my $class = shift;
-    my $lev = shift || 1;
+    my $refer = shift || "[CurrentBaseClass]";
+    my $lev   = shift || 1;
     $lev <= depth or return ();
 
     my @result = ();
     my ($file) = find_module_files( $class );
-    push @result,[ $class , $file ];
+    push @result,[ $class , $refer , $file ];
     for my $base ( find_base_classes( $file ) ) {
-        verbose $base;
+      # verbose $base;
         my ($base_file) = find_module_files( $base );
-        push @result, [ $base , $base_file ] , traverse_parent( $base , $lev + 1 );
+        push @result, [ $base , $class , $base_file ] , traverse_parent( $base , $class , $lev + 1 );
     }
     return @result;
 }
 
+# format: 
+#    base_class base_class_refer file
 map { print join(" ",@$_)."\n" } map { traverse_parent($_) } find_base_classes( shift );

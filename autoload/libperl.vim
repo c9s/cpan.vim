@@ -142,8 +142,8 @@ fun! libperl#find_base_classes(file)
   let out = system('perl ' . script_path . ' ' . a:file)
   let classes = [ ]
   for l in split(out,"\n") 
-    let [class,path] = split(l,' ')
-    call insert(classes,[ class,path ])
+    let [class,refer,path] = split(l,' ')
+    call insert(classes,[class,refer,path])
   endfor
   return classes
 endf
