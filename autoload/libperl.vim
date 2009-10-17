@@ -1,6 +1,6 @@
 
+" let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
-let libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 fun! libperl#GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
@@ -151,12 +151,13 @@ endf
 " $self->something
 
 fun! libperl#get_method_comp_start()
-  return searchpos('\(->\)\@<=\w\+' , 'bn' , line('.') )
+  return searchpos( '\(->\)\@<=\w\+'  , 'bn' , line('.') )
 endf
+
 
 fun! libperl#get_method_comp_base()
   let [numl,coln] = libperl#get_method_comp_start()
-  return matchstr(getline('.'),'\(->\)\@<=\w\+',coln)
+  return strpart( getline('.') , coln - 1 , col('.'))
 endf
 
 " return [ lnum , col ]
