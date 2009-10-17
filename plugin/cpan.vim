@@ -913,8 +913,7 @@ fun! g:PLCompletionWindow.find_base_class_files(file)
   return classes
 endf
 
-
-" for pattern is null , should display all entries
+" when pattern is empty , should display all entries
 fun! g:PLCompletionWindow.grep_entries(entries,pattern) 
   let result = { }
   for k in keys( a:entries )
@@ -955,7 +954,7 @@ endf
 
 fun! g:PLCompletionWindow.init_syntax()
   if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-    syn match EntryHeader +^\w\++
+    syn match EntryHeader +^[a-zA-Z0-9:_]\++
     syn match EntryItem   +^\s\s\w\++
 
     hi EntryHeader ctermfg=magenta
@@ -966,13 +965,6 @@ endf
 com! OpenPLCompletionWindow        :call g:PLCompletionWindow.open('botright', 'split',10,getline('.'))
 inoremap <C-x><C-x>                <ESC>:OpenPLCompletionWindow<CR>
 
-"fun! s:PLCompletionWindow.buffer_reload_init()
-"  call self.refresh_buffer_name()
-"  startinsert
-"  call cursor( 1 , col('$')  )
-"endf
-"
-
 fun! g:PLCompletionWindow.do_complete()
   let line = getline('.')
   let pos = match( line , '\w\+' )
@@ -981,7 +973,7 @@ fun! g:PLCompletionWindow.do_complete()
     " call setreg('f' , entry )
     bw
     " put f
-    call setline( line('.') , getline('.') . entry . '(  );' )
+    call setline( line('.') , getline('.') . entry . '(  )' )
     startinsert
     call cursor( line('.') , col('$') - 3 )
   endif
@@ -998,6 +990,7 @@ fun! g:PLCompletionWindow.init_mapping()
   " nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
   inoremap <silent> <buffer> <Enter> <ESC>jj:call g:PLCompletionWindow.do_complete()<CR>
+
   " nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
   " nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
