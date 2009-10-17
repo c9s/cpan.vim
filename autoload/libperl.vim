@@ -147,11 +147,24 @@ fun! libperl#find_base_classes(file)
   return classes
 endf
 
+" Data::Dumper->some_thing
+" $self->something
+
+fun! libperl#get_method_comp_start()
+  return searchpos('\(->\)\@<=\w\+' , 'bn' , line('.') )
+endf
+
+fun! libperl#get_method_comp_base()
+  let [numl,coln] = libperl#get_method_comp_start()
+  return matchstr(getline('.'),'\(->\)\@<=\w\+',coln)
+endf
+
 " return [ lnum , col ]
 fu! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
 
+" return comp base string
 fu! libperl#get_pkg_comp_base()
   let col = col('.')
   let [ lnum , coln ] = libperl#get_pkg_comp_start()
