@@ -155,7 +155,10 @@ fun! libperl#get_method_comp_start()
 endf
 
 fun! libperl#get_method_comp_base()
-  let [numl,coln] = libperl#get_method_comp_start()
+  let [lnum,coln] = libperl#get_method_comp_start()
+  if lnum == 0 && coln == 0
+    return ""
+  endif
   return strpart( getline('.') , coln - 1 , col('.'))
 endf
 

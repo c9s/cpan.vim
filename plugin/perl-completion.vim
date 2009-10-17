@@ -66,8 +66,12 @@ let g:PLCompletionWindow = copy( WindowManager )
 let g:PLCompletionWindow.resource = { }
 
 fun! g:PLCompletionWindow.open(pos,type,size,from)
-  let self.from = a:from
+  let self.from = a:from   " self.from = getline('.')
   let self.current_file = expand('%')
+  let self.comp_base = libperl#get_method_comp_base()
+  let self.comp_start = libperl#get_method_comp_start()
+  " echo 'base:' . self.comp_base
+  " echo self.comp_start
   call self.split(a:pos,a:type,a:size)
 endf
 
@@ -75,8 +79,6 @@ fun! g:PLCompletionWindow.close()
   bw  " we should clean up buffer in each completion
   redraw
 endf
-
-
 
 " XXX: 
 "   should save completion base position
