@@ -228,17 +228,27 @@ endf
 
 "  }}}
 
+fun! GetModuleFilePath(mod)
+  let paths = GetPerlLibPaths()
+  let fname = TranslateModuleName( a:mod )
+  call insert(paths,'lib/')
+  for p in paths
+    let fullpath = p . '/' . fname
+    if filereadable( fullpath ) 
+      return fullpath
+    endif
+  endfor
+  return 
+endf
+
 fun! TabGotoModuleFileInPaths(mod)
   let paths = GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
   let methodname = GetCursorMethodName()
-  call insert(paths, 'lib/' )
-  for p in paths 
-    let fullpath = p . '/' . fname
-    if filereadable( fullpath ) && TabGotoFile( fullpath , methodname ) 
-      break
-    endif
-  endfor
+  let path = GetModuleFilePath( a:mod )
+  if filereadable( path ) 
+    call TabGotoFile( path , methodname ) 
+  endif
 endf
 
 fun! TabGotoModuleFileFromCursor()
@@ -857,6 +867,9 @@ fun! g:PLCompletionWindow.close()
   redraw
 endf
 
+
+let g:pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+
 fun! g:PLCompletionWindow.init_buffer()
   let from = self.from
   let pos = match( from , '\S*$' , )
@@ -867,7 +880,6 @@ fun! g:PLCompletionWindow.init_buffer()
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
   if lastkey =~ '\$\(self\|class\)->' 
-    echo self.current_file 
     let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
 
     " grep function from base class
@@ -878,11 +890,14 @@ fun! g:PLCompletionWindow.init_buffer()
 
     let matches = self.grep_entries( self.resource , '' )
 
-  " XXX
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
-  " elseif 
-  "
+  elseif lastkey =~ g:pkg_token_pattern . '->'
+    let pkg = matchstr( lastkey , g:pkg_token_pattern )
+    let filepath = GetModuleFilePath(pkg)
+    let self.resource[ pkg ] = self.grep_file_functions( filepath )
+
+  " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
   else
