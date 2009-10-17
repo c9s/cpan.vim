@@ -102,8 +102,8 @@ fun! g:PLCompletionWindow.init_buffer()
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
-  elseif lastkey =~ g:pkg_token_pattern . '->'
-    let pkg = matchstr( lastkey , g:pkg_token_pattern )
+  elseif lastkey =~ g:libperl#pkg_token_pattern . '->'
+    let pkg = matchstr( lastkey , g:libperl#pkg_token_pattern )
     let filepath = libperl#GetModuleFilePath(pkg)
     let self.resource[ pkg ] = self.grep_file_functions( filepath )
   " XXX
@@ -179,19 +179,21 @@ endf
 
 fun! g:PLCompletionWindow.init_syntax()
   if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+    syn match WindowTitle +^>>.*$+
     syn match EntryHeader +^[a-zA-Z0-9:_]\++
-    syn match EntryItem   +^\s\s\w\++
-    hi EntryHeader ctermfg=magenta
-    hi EntryItem ctermfg=cyan
+    syn match EntryItem   "^\s\s\w\+"
+
+    hi WindowTitle ctermfg=green guifg=green 
+    hi EntryHeader ctermfg=magenta guifg=magenta
+    hi EntryItem ctermfg=cyan guifg=cyan
   endif
 endf
 
 
 fun! g:PLCompletionWindow.do_complete()
   let line = getline('.')
-  let pos = match( line , '\w\+' )
+  let entry = matchstr( line , '\w\+' )
   if line =~ '^\s\s'   " function entry 
-    let entry = strpart( line , pos )
     bw
     call setline( line('.') , getline('.') . entry . '()' )
     startinsert
@@ -211,4 +213,4 @@ fun! g:PLCompletionWindow.init_mapping()
 endf
 
 com! OpenPLCompletionWindow        :call g:PLCompletionWindow.open('botright', 'split',10,getline('.'))
-inoremap <C-x><C-x>                <ESC>:OpenPLCompletionWindow<CR>
+inoremap <silent> <C-x><C-x>                <ESC>:OpenPLCompletionWindow<CR>

@@ -1,4 +1,6 @@
 
+let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+
 fun! libperl#GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf
@@ -54,7 +56,7 @@ fun! libperl#GotoModule()
 endf
 
 fun! libperl#GetCursorModuleName()
-  return matchstr( expand("<cWORD>") , g:pkg_token_pattern )
+  return matchstr( expand("<cWORD>") , g:libperl#pkg_token_pattern )
 endf
 
 fun! libperl#GetCursorMethodName()

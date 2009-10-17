@@ -146,6 +146,7 @@ let g:cpan_curlib_pkgs = []
 let g:cpan_max_result = 50
 let g:cpan_user_defined_sources = []
 "}}}
+
 " default init {{{
 if system('uname') =~ 'Darwin'
   let g:cpan_browser_command  = 'open -a Firefox'
@@ -162,9 +163,6 @@ elseif executable('cpan')
 endif
 " }}}
 
-
-
-let g:pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 " Common Functions"{{{
 
