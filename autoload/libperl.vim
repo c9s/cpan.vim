@@ -154,16 +154,23 @@ fun! libperl#get_method_comp_start()
   return searchpos( '\(->\)\@<=\w\+'  , 'bn' , line('.') )
 endf
 
-
 fun! libperl#get_method_comp_base()
   let [numl,coln] = libperl#get_method_comp_start()
   return strpart( getline('.') , coln - 1 , col('.'))
+endf
+
+fun! libperl#clear_method_comp_base()
+  let [numl,coln] = libperl#get_method_comp_start()
+  let new = strpart( getline('.') , 0 , coln - 1 )
+  call setline( line('.') , new )
 endf
 
 " return [ lnum , col ]
 fu! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
+
+
 
 " return comp base string
 fu! libperl#get_pkg_comp_base()
