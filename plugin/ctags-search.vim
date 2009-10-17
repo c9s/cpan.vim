@@ -105,4 +105,8 @@ fun! s:CtagsWindow.switch_mode()
   endif
 endf
 
+com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
+com! GenCtags               :call s:CtagsWindow.input_path_for_ctags()
+nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
+
 "}}}

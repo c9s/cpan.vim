@@ -1,5 +1,6 @@
 
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+let libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 fun! libperl#GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
@@ -94,8 +95,12 @@ fun! libperl#GotoModuleFileInPaths(mod)
   echomsg "No such module: " . a:mod
 endf
 
+fun! libperl#GetINC()
+  return system('perl -e ''print join(" ",@INC)'' ')
+endf
+
 fun! libperl#FindPerlPackageFiles()
-  let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+  let paths = 'lib ' .  libperl#GetINC()
   let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
         \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
         \ . " | perl -pe 's/^package (.*?);/\$1/' "
@@ -125,13 +130,14 @@ fu! libperl#GetPackageSourceListPath()
   return
 endf
 
+
+" return a list , each item contains two items : [ class , file ].
 fun! libperl#find_base_classes(file)
   let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl '
   if ! executable( script_path )
     echoerr 'can not execute ' . script_path
     return [ ]
   endif
-
   let out = system('perl ' . script_path . ' ' . a:file)
   let classes = [ ]
   for l in split(out,"\n") 
@@ -139,4 +145,16 @@ fun! libperl#find_base_classes(file)
     call insert(classes,[ class,path ])
   endfor
   return classes
+endf
+
+fu! libperl#GetCompStartPos()
+  return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
+endf
+
+fu! libperl#GetCompBase()
+  let col = col('.')
+  let pos = libperl#GetCompStartPos()
+  let line = getline('.')
+  let base =  strpart( line , pos[1] , col )
+  return base
 endf

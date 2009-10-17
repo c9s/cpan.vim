@@ -458,9 +458,8 @@ endf
 "
 fu! CompleteInstalledCPANModuleList()
   cal PrepareInstalledCPANModuleCache()
-
-  let start_pos  = GetCompStartPos()
-  let base = GetCompBase()
+  let start_pos  = libperl#GetCompStartPos()
+  let base = libperl#GetCompBase()
   echon "filtering..."
   " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
   let res = []
@@ -479,35 +478,17 @@ fu! CompleteCPANModuleList()
     let g:cpan_pkgs = GetCPANModuleList(0)
     echon "done"
   endif
-
-  let start_pos  = GetCompStartPos()
-  let base = GetCompBase()
+  let start_pos  = libperl#GetCompStartPos()
+  let base = libperl#GetCompBase()
   echon "filtering..."
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
   call complete( start_pos[1]+1 , res )
   return ''
 endf
 
-fu! GetCompStartPos()
-  return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
-endf
-
-fu! GetCompBase()
-  let col = col('.')
-  let pos = GetCompStartPos()
-  let line = getline('.')
-  let base =  strpart( line , pos[1] , col )
-  return base
-endf
 "}}}
 "
 "
-com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
-com! GenCtags               :call s:CtagsWindow.input_path_for_ctags()
-nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
-
-
-
 com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
 com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
 nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
