@@ -157,8 +157,12 @@ elseif executable('cpan')
   let g:cpan_install_command = 'cpan'
 endif
 " }}}
-" Common Functions"{{{
 
+
+
+let g:pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+
+" Common Functions"{{{
 
 fun! s:echo(msg)
   redraw
@@ -175,7 +179,7 @@ fun! GetPerlLibPaths()
 endf
 
 fun! GetCursorModuleName()
-  return substitute( expand("<cWORD>") , '.\{-}\([a-zA-Z0-9_:]\+\).*$' , '\1' , '' )
+  return matchstr( expand("<cWORD>") , g:pkg_token_pattern )
 endf
 
 fun! GetCursorMethodName()
@@ -868,7 +872,6 @@ fun! g:PLCompletionWindow.close()
 endf
 
 
-let g:pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 fun! g:PLCompletionWindow.init_buffer()
   let from = self.from
@@ -944,9 +947,7 @@ fun! g:PLCompletionWindow.render_result(matches)
   let out = ''
   let f_pad = "\n  "
   for k in keys( a:matches ) 
-    let out .= k
-    let out .=  f_pad . join( a:matches[k] ,  f_pad )
-    let out .= "\n"
+    let out .= k . f_pad . join( a:matches[k] ,  f_pad ) . "\n"
   endfor
   silent put=out
 endf
@@ -984,9 +985,7 @@ fun! g:PLCompletionWindow.do_complete()
   let pos = match( line , '\w\+' )
   if line =~ '^\s\s'   " function entry 
     let entry = strpart( line , pos )
-    " call setreg('f' , entry )
     bw
-    " put f
     call setline( line('.') , getline('.') . entry . '()' )
     startinsert
     call cursor( line('.') , col('$') - 1 )
@@ -1024,9 +1023,9 @@ fu! PodHelperFunctionHeader()
         \ '',
         \]
   for text in lines 
-    :call append( line('.') - 1 , text )
+    call append( line('.') - 1 , text )
   endfor
-  :call cursor( line('.') - len( lines ) + 2 , 1  )
+  call cursor( line('.') - len( lines ) + 2 , 1  )
 endf
 " }}}
 
@@ -1081,16 +1080,9 @@ endf
 
 
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
-
 nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
-
 
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)
 com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(1)
-
-" for testing...
-" Jifty::Collection
-" Data::Dumper::Simple
-" AnyEvent::Impl::Perl 
