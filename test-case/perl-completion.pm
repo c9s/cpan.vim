@@ -23,11 +23,12 @@ sub translate_ticket_state {
     my $transactions = shift;
 
     # Ctrl-x Ctrl-x
-    $self->
-    $self->tra
-    $class->
+    $self->ticket_id(someting)
+    $self->translate_status()
+    $class->translate_ticket_state()
     $ticket->
     Params::Validate->
+    Jifty->current_user()
 
     # Ctrl-x Ctrl-m
     App::SD::U

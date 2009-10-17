@@ -49,7 +49,7 @@ sub verbose { print STDERR @_,"\n" }
 
 sub traverse_parent {
     my $class = shift;
-    my $refer = shift || "[CurrentBaseClass]";
+    my $refer = shift || "[CurrentClass]";
     my $lev   = shift || 1;
     $lev <= depth or return ();
 
