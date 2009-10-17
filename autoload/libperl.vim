@@ -1,4 +1,5 @@
 
+" vim:fdm=syntax:fdl=0:
 " let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
@@ -133,9 +134,9 @@ endf
 
 " return a list , each item contains two items : [ class , file ].
 fun! libperl#find_base_classes(file)
-  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl '
-  if ! executable( script_path )
-    echoerr 'can not execute ' . script_path
+  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl'
+  if ! filereadable( script_path )
+    echoerr 'can not read ' . script_path
     return [ ]
   endif
   let out = system('perl ' . script_path . ' ' . a:file)
@@ -147,27 +148,30 @@ fun! libperl#find_base_classes(file)
   return classes
 endf
 
-
-
-
-" Data::Dumper->some_thing
+" Data::Dumper->something
 " $self->something
-"
+" Jifty->
+" Jifty->a
+
+" should get the start postion of something like Data::Dumper and $self
 fun! libperl#get_method_comp_refer_start()
   return searchpos( '\S\+\(->\)\@='  , 'bn' , line('.') )
 endf
 
+" should return something like 'Data::Dumper' and '$self'
 fun! libperl#get_method_comp_refer_base()
   let start = libperl#get_method_comp_refer_start()
   let end = libperl#get_method_comp_start()
-  if lnum == 0 && coln == 0
+  if start[0] == 0 && start[1] == 0
     return ""
   endif
   return strpart( getline('.') , start[1] - 1 , end[1] - 2 - start[1] )
 endf
 
 fun! libperl#get_method_comp_start()
-  return searchpos( '\(->\)\@<=\w*'  , 'bn' , line('.') )
+  let pos = searchpos( '->'  , 'bn' , line('.') )
+  let pos[1] += 2
+  return pos
 endf
 
 fun! libperl#get_method_comp_base()
@@ -188,8 +192,6 @@ endf
 fu! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
-
-
 
 " return comp base string
 fu! libperl#get_pkg_comp_base()

@@ -70,6 +70,8 @@ fun! g:PLCompletionWindow.open(pos,type,size,from)
   let self.current_file = expand('%')
   let self.comp_base = libperl#get_method_comp_base()
   let self.comp_start = libperl#get_method_comp_start()
+  let self.comp_refer_base = libperl#get_method_comp_refer_base()
+  let self.comp_refer_start = libperl#get_method_comp_refer_start()
 
   " self.pos is [bufnum, lnum, col, off]
   let pos = getpos('.')
@@ -83,6 +85,7 @@ endf
 fun! g:PLCompletionWindow.close()
   bw  " we should clean up buffer in every completion
   redraw
+  echo "CLOSE"
 endf
 
 " XXX: 
@@ -96,16 +99,15 @@ fun! g:PLCompletionWindow.init_buffer()
   "     Data::Dumper->something
   "     $self->something
   "     $class->something
-  let pos = searchpos( '\S\+\(->\)\@='  , 'bn' , line('.') )
-
+  " let pos = searchpos( '\S\+\(->\)\@='  , 'bn' , line('.') )
   " let refer = strpart( from , pos )
-  let refer = strpart( from , pos )
+  " let refer = strpart( from , pos )
 
   let matches = { }
 
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
-  if refer =~ '\$\(self\|class\)->' 
+  if self.comp_refer_base =~ '\$\(self\|class\)' 
     let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
 
     " grep function from base class
@@ -116,8 +118,8 @@ fun! g:PLCompletionWindow.init_buffer()
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
-  elseif refer =~ g:libperl#pkg_token_pattern . '->'
-    let pkg = matchstr( refer , g:libperl#pkg_token_pattern )
+  elseif self.comp_refer_base =~ g:libperl#pkg_token_pattern 
+    let pkg = self.comp_refer_base
     let filepath = libperl#GetModuleFilePath(pkg)
     let self.resource[ pkg ] = self.grep_file_functions( filepath )
   " XXX
@@ -133,6 +135,12 @@ fun! g:PLCompletionWindow.init_buffer()
 
   cal self.render_result( self.resource )
 
+  if strlen( self.comp_base ) > 0 
+    cal self.render_result( self.resource )
+    cal setline( 2 , self.comp_base )
+    cal self.update_search()
+  endif
+
   autocmd CursorMovedI <buffer>       call g:PLCompletionWindow.update_search()
   autocmd BufWinLeave  <buffer>       call g:PLCompletionWindow.close()
   " call self.refresh_buffer_name()
@@ -140,7 +148,11 @@ fun! g:PLCompletionWindow.init_buffer()
 endf
 
 fun! g:PLCompletionWindow.start()
-  call cursor(2,1)
+  if strlen( self.comp_base ) > 0
+    call cursor(2, strlen(self.comp_base)+1)
+  else 
+    call cursor(2,1)
+  endif
   startinsert
 endf
 
@@ -199,6 +211,7 @@ fun! g:PLCompletionWindow.do_complete()
   let entry = matchstr( line , '\w\+' )
   if line =~ '^\s\s'   " function entry 
     bw
+    call libperl#clear_method_comp_base()
     call setline( line('.') , getline('.') . entry . '()' )
     startinsert
     call cursor( line('.') , col('$') - 1 )
