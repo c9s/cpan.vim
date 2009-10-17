@@ -6,11 +6,13 @@ all:
 
 install:
 		mkdir -p ~/.vim/plugin
-		cp -v plugin/cpan.vim  ~/.vim/plugin/
+		rsync -uvr plugin/  ~/.vim/plugin/
+		rsync -uvr autoload/ ~/.vim/autoload/
 		mkdir -p ~/.vim/perl
 		cp perl-functions ~/.vim/perl/
 		mkdir -p ~/.vim/bin/
 		cp utils/find_base_classes.pl ~/.vim/bin/
+
 
 doc:
 	vim plugin/cpan.vim -c "call cursor(1,1)" -c "exec '1,'.search('^\n').'write! README'" -c ":q"

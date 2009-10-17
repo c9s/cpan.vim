@@ -173,14 +173,6 @@ fun! s:echo(msg)
   echomsg a:msg
 endf
 
-" XXX
-fun! FindBin(bin)
-
-endf
-
-fun! GetPerlLibPaths()
-  return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
-endf
 
 fun! GetCursorModuleName()
   return matchstr( expand("<cWORD>") , g:pkg_token_pattern )
@@ -237,7 +229,7 @@ endf
 "  }}}
 
 fun! GetModuleFilePath(mod)
-  let paths = GetPerlLibPaths()
+  let paths = libperl#GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
   call insert(paths,'lib/')
   for p in paths
@@ -250,7 +242,7 @@ fun! GetModuleFilePath(mod)
 endf
 
 fun! TabGotoModuleFileInPaths(mod)
-  let paths = GetPerlLibPaths()
+  let paths = libperl#GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
   let methodname = GetCursorMethodName()
   let path = GetModuleFilePath( a:mod )
@@ -264,7 +256,7 @@ fun! TabGotoModuleFileFromCursor()
 endf
 
 fun! GotoModuleFileInPaths(mod)
-  let paths = GetPerlLibPaths()
+  let paths = libperl#GetPerlLibPaths()
   let fname = TranslateModuleName( a:mod )
   let methodname = GetCursorMethodName()
   call insert(paths, 'lib/' )
