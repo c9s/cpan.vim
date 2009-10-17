@@ -406,7 +406,7 @@ let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
 
 fun! s:FunctionWindow.init_mapping()
-  nnoremap <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
+  nnoremap <silent> <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
 endf
 
 fun! s:FunctionWindow.init_syntax()
