@@ -147,11 +147,27 @@ fun! libperl#find_base_classes(file)
   return classes
 endf
 
+
+
+
 " Data::Dumper->some_thing
 " $self->something
+"
+fun! libperl#get_method_comp_refer_start()
+  return searchpos( '\S\+\(->\)\@='  , 'bn' , line('.') )
+endf
+
+fun! libperl#get_method_comp_refer_base()
+  let start = libperl#get_method_comp_refer_start()
+  let end = libperl#get_method_comp_start()
+  if lnum == 0 && coln == 0
+    return ""
+  endif
+  return strpart( getline('.') , start[1] - 1 , end[1] - 2 - start[1] )
+endf
 
 fun! libperl#get_method_comp_start()
-  return searchpos( '\(->\)\@<=\w\+'  , 'bn' , line('.') )
+  return searchpos( '\(->\)\@<=\w*'  , 'bn' , line('.') )
 endf
 
 fun! libperl#get_method_comp_base()
@@ -159,7 +175,7 @@ fun! libperl#get_method_comp_base()
   if lnum == 0 && coln == 0
     return ""
   endif
-  return strpart( getline('.') , coln - 1 , col('.'))
+  return strpart( getline('.') , coln - 1 , col('.') - coln + 1 )
 endf
 
 fun! libperl#clear_method_comp_base()

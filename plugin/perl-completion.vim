@@ -70,13 +70,18 @@ fun! g:PLCompletionWindow.open(pos,type,size,from)
   let self.current_file = expand('%')
   let self.comp_base = libperl#get_method_comp_base()
   let self.comp_start = libperl#get_method_comp_start()
+
+  " self.pos is [bufnum, lnum, col, off]
+  let pos = getpos('.')
+  let self.pos = { 'bufnum': pos[0] , 'lnum': pos[1] , 'col': pos[2] }
+
   " echo 'base:' . self.comp_base
   " echo self.comp_start
   call self.split(a:pos,a:type,a:size)
 endf
 
 fun! g:PLCompletionWindow.close()
-  bw  " we should clean up buffer in each completion
+  bw  " we should clean up buffer in every completion
   redraw
 endf
 
@@ -86,14 +91,21 @@ endf
 "
 fun! g:PLCompletionWindow.init_buffer()
   let from = self.from
-  let pos = match( from , '\S*$' , )
-  let lastkey = strpart( from , pos )
+  " let pos = match( from , '\S*$' , )
+  " \S\+\(->\)\@= is for matching:
+  "     Data::Dumper->something
+  "     $self->something
+  "     $class->something
+  let pos = searchpos( '\S\+\(->\)\@='  , 'bn' , line('.') )
+
+  " let refer = strpart( from , pos )
+  let refer = strpart( from , pos )
 
   let matches = { }
 
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
-  if lastkey =~ '\$\(self\|class\)->' 
+  if refer =~ '\$\(self\|class\)->' 
     let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
 
     " grep function from base class
@@ -104,8 +116,8 @@ fun! g:PLCompletionWindow.init_buffer()
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
-  elseif lastkey =~ g:libperl#pkg_token_pattern . '->'
-    let pkg = matchstr( lastkey , g:libperl#pkg_token_pattern )
+  elseif refer =~ g:libperl#pkg_token_pattern . '->'
+    let pkg = matchstr( refer , g:libperl#pkg_token_pattern )
     let filepath = libperl#GetModuleFilePath(pkg)
     let self.resource[ pkg ] = self.grep_file_functions( filepath )
   " XXX
