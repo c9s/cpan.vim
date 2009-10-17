@@ -846,6 +846,10 @@ endf
 
 
 
+" XXX: 
+"   should save completion base position
+"   and do complete from base position
+"
 fun! g:PLCompletionWindow.init_buffer()
   let from = self.from
   let pos = match( from , '\S*$' , )
