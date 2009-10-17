@@ -173,44 +173,6 @@ fun! s:echo(msg)
   echomsg a:msg
 endf
 
-
-fun! GetCursorModuleName()
-  return matchstr( expand("<cWORD>") , g:pkg_token_pattern )
-endf
-
-fun! GetCursorMethodName()
-  let cw = expand("<cWORD>")
-  let m = substitute( cw , '.\{-}\([a-zA-Z0-9_:]\+\)->\(\w\+\).*$' , '\2' , '' )
-  if m != cw 
-    return m
-  endif
-  return
-endf
-
-" translate module name to file path
-fun! TranslateModuleName(n)
-  return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
-endf
-
-fun! TabGotoFile(fullpath,method)
-  execute ':tabedit ' . a:fullpath
-  if strlen(a:method) > 0
-    let s = search( '^sub\s\+' . a:method . '\s' , '', 0 )
-    if !s 
-      "echomsg "Can not found method: " . a:method 
-    endif
-  endif
-  return 1
-endf
-
-fun! GotoFile(fullpath,method)
-  execute ':e ' . a:fullpath
-  if strlen(a:method) > 0
-    call search( '^sub\s\+' . a:method . '\s' , '', 0 )
-  endif
-  return 1
-endf
-
 " check file expiry
 "    @file:    filename
 "    @expiry:  minute
@@ -224,100 +186,7 @@ fu! IsExpired(file,expiry)
     return 0
   endif
 endf
-
-
 "  }}}
-
-fun! GetModuleFilePath(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = TranslateModuleName( a:mod )
-  call insert(paths,'lib/')
-  for p in paths
-    let fullpath = p . '/' . fname
-    if filereadable( fullpath ) 
-      return fullpath
-    endif
-  endfor
-  return 
-endf
-
-fun! TabGotoModuleFileInPaths(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = TranslateModuleName( a:mod )
-  let methodname = GetCursorMethodName()
-  let path = GetModuleFilePath( a:mod )
-  if filereadable( path ) 
-    call TabGotoFile( path , methodname ) 
-  endif
-endf
-
-fun! TabGotoModuleFileFromCursor()
-  call TabGotoModuleFileInPaths( GetCursorModuleName() )
-endf
-
-fun! GotoModuleFileInPaths(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = TranslateModuleName( a:mod )
-  let methodname = GetCursorMethodName()
-  call insert(paths, 'lib/' )
-  for p in paths 
-    let fullpath = p . '/' . fname
-    if filereadable( fullpath ) && GotoFile( fullpath , methodname ) 
-      return
-    endif
-  endfor
-  echomsg "No such module: " . a:mod
-endf
-
-
-fun! GotoTagNewTab(tag)
-  let list = taglist( a:tag )
-  if len(list) == 1 | exec 'tab tag ' . a:tag
-  else | exec 'tab ts ' . a:tag | endif
-endf
-
-fun! GotoTag(tag)
-  resize 60 
-  let list = taglist( a:tag )
-  if len(list) == 1 | exec ' tag ' . a:tag
-  else | exec ' ts ' . a:tag | endif
-endf
-
-fun! GotoModule()
-  if g:cpan_win_type == 'v'
-    vertical resize 98
-  else
-    resize 60
-  endif
-  call GotoModuleFileInPaths( getline('.') )
-endf
-
-fun! FindPerlPackageFiles()
-  let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-  let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
-        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-        \ . " | perl -pe 's/^package (.*?);/\$1/' "
-        \ . " | sort | uniq " )
-  return pkgs
-endf
-
-fun! InstallCPANModule()
-  exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
-endf
-
-fu! GetPackageSourceListPath()
-  let paths = [ 
-        \expand('~/.cpanplus/02packages.details.txt.gz'),
-        \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
-        \]
-  call extend( paths , g:cpan_user_defined_sources )
-  for f in paths 
-    if filereadable( f ) 
-      return f
-    endif
-  endfor
-  return
-endf
 
 
 " &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
@@ -403,7 +272,7 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
-  nnoremap <silent> <buffer> <Enter> :call GotoModule()<CR>
+  nnoremap <silent> <buffer> <Enter> :call libperl#GotoModule()<CR>
   nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
@@ -476,7 +345,7 @@ endf
 " Return: cpan module list [list]
 fu! GetCPANModuleList(force)
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
-    let path =  GetPackageSourceListPath()
+    let path =  libperl#GetPackageSourceListPath()
     echon "executing zcat: " . path
     call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
     echon "done"
@@ -657,8 +526,8 @@ nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 
-nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>
-nnoremap <C-c>g            :call TabGotoModuleFileFromCursor()<CR>
+nnoremap <C-x><C-i>        :call libperl#InstallCPANModule()<CR>
+nnoremap <C-c>g            :call libperl#TabGotoModuleFileFromCursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)

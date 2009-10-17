@@ -104,7 +104,7 @@ fun! g:PLCompletionWindow.init_buffer()
   " subrouteins from the file , and the parent packages
   elseif lastkey =~ g:pkg_token_pattern . '->'
     let pkg = matchstr( lastkey , g:pkg_token_pattern )
-    let filepath = GetModuleFilePath(pkg)
+    let filepath = libperl#GetModuleFilePath(pkg)
     let self.resource[ pkg ] = self.grep_file_functions( filepath )
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
