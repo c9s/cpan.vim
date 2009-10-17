@@ -1,8 +1,12 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-use PPI;
-use PPI::Dumper;
+eval qq{
+    use PPI;
+    use PPI::Dumper;
+};
+die 'Please use cpan to install PPI' if $@ ;
+
 use constant depth => 3;
 
 sub find_base_classes {
@@ -59,5 +63,4 @@ sub traverse_parent {
     return @result;
 }
 
-my @results = map { traverse_parent( $_ ) } find_base_classes( shift );
-print join(" ",@$_) . "\n" for  @results ;
+map { print join(" ",@$_)."\n" } map { traverse_parent($_) } find_base_classes( shift );
