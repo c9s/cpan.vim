@@ -305,6 +305,24 @@ fun! FindPerlPackageFiles()
   return pkgs
 endf
 
+fun! InstallCPANModule()
+  exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
+endf
+
+fu! GetPackageSourceListPath()
+  let paths = [ 
+        \expand('~/.cpanplus/02packages.details.txt.gz'),
+        \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
+        \]
+  call extend( paths , g:cpan_user_defined_sources )
+  for f in paths 
+    if filereadable( f ) 
+      return f
+    endif
+  endfor
+  return
+endf
+
 " ==== Window Manager =========================================== {{{
 let WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
 
@@ -446,9 +464,6 @@ fun! s:FunctionWindow.switch_mode()
   if self.mode == 1 | let self.mode = 0 | else | let self.mode = self.mode + 1 | endif
 endf
 
-com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
-com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
-nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"}}}
 
@@ -556,9 +571,6 @@ fun! s:CtagsWindow.switch_mode()
   endif
 endf
 
-com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
-com! GenCtags               :call s:CtagsWindow.input_path_for_ctags()
-nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
 "}}}
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
@@ -617,8 +629,7 @@ endf
 
 
 fun! s:CPANWindow.update_search()
-  let pattern = getline('.')
-
+  let pattern = getline(1)
   let pkgs = []
   if g:cpan_win_mode == g:CPAN.Mode.Installed
     cal PrepareInstalledCPANModuleCache()
@@ -641,25 +652,6 @@ fun! s:CPANWindow.update_search()
   call setpos('.',old)
   startinsert
 endfunc
-
-
-fun! InstallCPANModule()
-  exec '!' . g:cpan_install_command . ' ' . GetCursorModuleName()
-endf
-
-fu! GetPackageSourceListPath()
-  let paths = [ 
-        \expand('~/.cpanplus/02packages.details.txt.gz'),
-        \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
-        \]
-  call extend( paths , g:cpan_user_defined_sources )
-  for f in paths 
-    if filereadable( f ) 
-      return f
-    endif
-  endfor
-  return
-endf
 
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
@@ -718,14 +710,6 @@ fu! GetCurrentLibCPANModuleList(force)
   return readfile( cpan_curlib_cache )
 endf
 
-com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
-com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
-com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
-
-" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
-nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
@@ -1066,6 +1050,28 @@ fu! GetCompBase()
   return base
 endf
 "}}}
+"
+"
+com! OpenCtagsWindow        :call s:CtagsWindow.open('topleft', 'split',10)
+com! GenCtags               :call s:CtagsWindow.input_path_for_ctags()
+nnoremap <C-c><C-t>        :OpenCtagsWindow<CR>
+
+
+
+com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
+com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
+nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
+
+
+
+com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
+com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
+com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
+
+" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
+nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
+nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 
 nnoremap <C-x><C-i>        :call InstallCPANModule()<CR>

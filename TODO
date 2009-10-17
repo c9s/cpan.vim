@@ -41,3 +41,10 @@ x built-in function search
             or filename , variable ... etc
 
         should display refered file and line number
+
+* open perldoc in new tab
+* complete something like this:
+    
+      ORZ->do_so
+
+* complete function name from module exported function
