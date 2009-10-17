@@ -57,7 +57,6 @@ sub traverse_parent {
     my ($file) = find_module_files( $class );
     push @result,[ $class , $refer , $file ];
     for my $base ( find_base_classes( $file ) ) {
-        my ($base_file) = find_module_files( $base );
         push @result, traverse_parent( $base , $class , $lev + 1 );
     }
     return @result;
