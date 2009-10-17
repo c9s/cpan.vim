@@ -595,13 +595,6 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
-fun! s:CPANWindow.init_syntax()
-  if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-    "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-    "hi Background ctermbg=darkblue
-  endif
-endf
-
 fun! s:CPANWindow.switch_mode()
   let g:cpan_win_mode = g:cpan_win_mode + 1
   if g:cpan_win_mode == 4
