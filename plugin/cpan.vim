@@ -888,15 +888,12 @@ fun! g:PLCompletionWindow.init_buffer()
       let self.resource[ class ] = self.grep_file_functions( path )
     endfor
 
-    let matches = self.grep_entries( self.resource , '' )
-
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
   elseif lastkey =~ g:pkg_token_pattern . '->'
     let pkg = matchstr( lastkey , g:pkg_token_pattern )
     let filepath = GetModuleFilePath(pkg)
     let self.resource[ pkg ] = self.grep_file_functions( filepath )
-
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
@@ -908,7 +905,7 @@ fun! g:PLCompletionWindow.init_buffer()
 
   call append(0, [">> PerlCompletion Window: Complete:<Enter>  Next/Previous Class:<Ctrl-j>/<Ctrl-k>  Next/Previous Entry:<Ctrl-n>/<Ctrl-p> ",""])
 
-  cal self.render_result( matches )
+  cal self.render_result( self.resource )
 
   autocmd CursorMovedI <buffer>       call g:PLCompletionWindow.update_search()
   autocmd BufWinLeave  <buffer>       call g:PLCompletionWindow.close()
@@ -990,9 +987,9 @@ fun! g:PLCompletionWindow.do_complete()
     " call setreg('f' , entry )
     bw
     " put f
-    call setline( line('.') , getline('.') . entry . '(  )' )
+    call setline( line('.') , getline('.') . entry . '()' )
     startinsert
-    call cursor( line('.') , col('$') - 3 )
+    call cursor( line('.') , col('$') - 1 )
   endif
 endf
 
