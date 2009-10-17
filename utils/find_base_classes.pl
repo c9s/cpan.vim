@@ -43,25 +43,21 @@ sub find_module_files {
 
 sub verbose { print STDERR @_,"\n" }
 
-sub traverse_class {
+sub traverse_parent {
     my $class = shift;
     my $lev = shift || 1;
+    $lev <= depth or return ();
 
-    $lev <= depth or return;
-
-    my @files = find_module_files( $class );
-    @files or return;  # file doesn't exist
-
-    my $file = shift @files;
-    verbose "depth: $lev | parsing $file";
-    my @bases = find_base_classes( $file );
-    my @classes = $class;
-    for my $base ( @bases ) {
-        push @classes , traverse_class( $base , $lev + 1 );
+    my @result = ();
+    my ($file) = find_module_files( $class );
+    push @result,[ $class , $file ];
+    for my $base ( find_base_classes( $file ) ) {
+        verbose $base;
+        my ($base_file) = find_module_files( $base );
+        push @result, [ $base , $base_file ] , traverse_parent( $base , $lev + 1 );
     }
-    return @classes;
+    return @result;
 }
 
-# my @bases = find_base_classes( shift ); # search from file
-my @classes = map { traverse_class( $_ ) } find_base_classes( shift );
-print join(" ",@classes) . "\n";
+my @results = map { traverse_parent( $_ ) } find_base_classes( shift );
+print join(" ",@$_) . "\n" for  @results ;
