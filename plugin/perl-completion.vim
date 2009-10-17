@@ -63,9 +63,9 @@ runtime! plugin/window.vim
 let g:plc_max_entries_per_class = 5
 
 let g:PLCompletionWindow = copy( WindowManager )
-let g:PLCompletionWindow.resource = [ ]
 
 fun! g:PLCompletionWindow.open(pos,type,size,from)
+  let self.resource = [ ]
   let self.from = a:from   " self.from = getline('.')
   let self.current_file = expand('%')
   let self.comp_base = libperl#get_method_comp_base()
@@ -84,8 +84,8 @@ endf
 
 fun! g:PLCompletionWindow.close()
   bw  " we should clean up buffer in every completion
+  call garbagecollect()
   redraw
-  echo "CLOSE"
 endf
 
 " XXX: 
@@ -109,16 +109,11 @@ fun! g:PLCompletionWindow.init_buffer()
   " and parse parent packages , the maxima is by class depth
   if self.comp_refer_base =~ '\$\(self\|class\)' 
     let _self = { 'class': 'self' , 'refer': '' , 'functions': [ ] }
-    let _self.functions = self.grep_file_functions( self.current_file )
+    let _self.functions = libperl#grep_file_functions( self.current_file )
     call insert(self.resource, _self )
 
-    " grep function from base class
-    let base_classes = libperl#find_base_classes( self.current_file ) 
-    for [class,class_refer,path] in base_classes
-      let class_comp = { 'class': class , 'refer': class_refer , 'functions': [ ] }
-      let class_comp.functions = self.grep_file_functions( path )
-      call insert( self.resource , class_comp )
-    endfor
+    let base_functions = libperl#parse_base_class_functions( self.current_file )
+    call extend( self.resource , base_functions )
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
@@ -127,8 +122,11 @@ fun! g:PLCompletionWindow.init_buffer()
     let filepath = libperl#GetModuleFilePath(pkg)
 
     let class_comp = { 'class': pkg , 'refer': '' , 'functions': [ ] }
-    let class_comp.functions = self.grep_file_functions( filepath )
+    let class_comp.functions = libperl#grep_file_functions( filepath )
     call insert( self.resource , class_comp )
+
+    let base_functions = libperl#parse_base_class_functions( filepath )
+    call extend( self.resource , base_functions )
 
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
@@ -173,29 +171,31 @@ fun! g:PLCompletionWindow.grep_entries(entries,pattern)
     if strlen( a:pattern ) > 0 && len( entry_result.functions ) > g:plc_max_entries_per_class 
       let entry_result.functions = remove( entry_result.functions , 0 , g:plc_max_entries_per_class )
     endif
-    call insert( result , entry_result )
+    call add( result , entry_result )
   endfor
   return result
 endf
+
 
 fun! g:PLCompletionWindow.render_result(matches)
   let out = ''
   let f_pad = "\n  "
   for entry in a:matches
     let out .= entry.class 
-    if entry.refer 
-      let out .= ' isa:' . entry.refer
+
+    if strlen(entry.refer) > 0
+      let out .= ' from:' . entry.refer
     endif 
-    let out .= f_pad . join( entry.functions ,  f_pad ) . "\n"
+
+    if len( entry.functions ) > 0 
+      let out .= f_pad . join( entry.functions ,  f_pad )
+    endif
+
+    let out .= "\n"
   endfor
   silent put=out
 endf
 
-" XXX: Try PPI
-fun! g:PLCompletionWindow.grep_file_functions(file)
-  let out = system('grep -oP "(?<=^sub )\w+" ' . a:file )
-  return split( out , "\n" )
-endf
 
 fun! g:PLCompletionWindow.update_search()
   let pattern = getline( 2 )
@@ -219,7 +219,6 @@ fun! g:PLCompletionWindow.init_syntax()
   endif
 endf
 
-
 fun! g:PLCompletionWindow.do_complete()
   let line = getline('.')
   let entry = matchstr( line , '\w\+' )
@@ -232,9 +231,14 @@ fun! g:PLCompletionWindow.do_complete()
   endif
 endf
 
+fun! g:PLCompletionWindow.do_complete_first()
+  call search('^\s\s\w\+')
+  call self.do_complete()
+endf
+
 fun! g:PLCompletionWindow.init_mapping()
   nnoremap <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
-  inoremap <silent> <buffer> <Enter> <ESC>jj:call g:PLCompletionWindow.do_complete()<CR>
+  inoremap <silent> <buffer> <Enter> <ESC>:call g:PLCompletionWindow.do_complete_first()<CR>
 
   nnoremap <silent> <buffer> <C-j> :call search('^[a-zA-Z]')<CR>
   nnoremap <silent> <buffer> <C-k> :call search('^[a-zA-Z]','b')<CR>

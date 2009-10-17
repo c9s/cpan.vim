@@ -140,13 +140,29 @@ fun! libperl#find_base_classes(file)
     return [ ]
   endif
   let out = system('perl ' . script_path . ' ' . a:file)
-  echo out
   let classes = [ ]
   for l in split(out,"\n") 
     let [class,refer,path] = split(l,' ')
-    call insert(classes,[class,refer,path])
+    call add(classes,[class,refer,path])
   endfor
   return classes
+endf
+
+" XXX: Try PPI
+fun! libperl#grep_file_functions(file)
+  let out = system('grep -oP "(?<=^sub )\w+" ' . a:file )
+  return split( out , "\n" )
+endf
+
+fun! libperl#parse_base_class_functions(filepath)
+  let base_classes = libperl#find_base_classes( a:filepath ) 
+  let result = [ ]
+  for [class,class_refer,path] in base_classes
+    let class_comp = { 'class': class , 'refer': class_refer , 'functions': [ ] }
+    let class_comp.functions = libperl#grep_file_functions( path )
+    call add( result , class_comp )
+  endfor
+  return result
 endf
 
 " Data::Dumper->something
