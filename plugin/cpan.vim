@@ -847,61 +847,84 @@ endf
 
 " require cpan.vim
 
-let s:PLCompletionWindow = copy(WindowManager)
+let g:PLCompletionWindow = copy(WindowManager)
+let g:PLCompletionWindow.resource = { }
 
-fun! s:PLCompletionWindow.open(pos,type,size,from)
+fun! g:PLCompletionWindow.open(pos,type,size,from)
   let self.from = a:from
   let self.current_file = expand('%')
   call self.split(a:pos,a:type,a:size)
 endf
 
-fun! s:PLCompletionWindow.init_buffer()
-  setfiletype PLCompletionWindow
-  "cal PrepareInstalledCPANModuleCache()
-  "cal self.render_result( g:cpan_installed_pkgs )
-
-  " if it's from $self or $class, parse subroutines from current file
-  " and parse parent packages , the maxima is by class depth
-
-
-  " if it's from PACKAGE::SOMETHING , find the package file , and parse
-  " subrouteins from the file , and the parent packages
-
-
-  " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
-  " the variables from the file . and the parent packages
-
-  autocmd CursorMovedI <buffer>       call s:PLCompletionWindow.update_search()
-  autocmd BufWinLeave  <buffer>       call s:PLCompletionWindow.close()
-  " call self.refresh_buffer_name()
+fun! g:PLCompletionWindow.close()
+  bw  " we should clean up buffer in each completion
+  redraw
 endf
 
-" XXX: Try PPI
-fun! GrepFunctions(file)
-  let out = system("grep -oP '(?<=^sub )\w+' " . a:file )
-  return split( out , "\n" )
-endf
-
-fun! s:PLCompletionWindow.update_search()
-
+fun! g:PLCompletionWindow.init_buffer()
   let from = self.from
   let pos = match( from , '\S*$' , )
   let lastkey = strpart( from , pos )
 
-  let func  = [] 
-  if lastkey == '$\(self\|class\)->' 
-    let func = GrepFunctions( self.current_file )
+  let matches = { }
+  " if it's from $self or $class, parse subroutines from current file
+  " and parse parent packages , the maxima is by class depth
+  if lastkey =~ '\$\(self\|class\)->' 
+    echo self.current_file 
+    let self.resource[ "self" ] = self.grep_file_functions( self.current_file )
+
+    let matches = self.grep_entries( self.resource , '' )
+
+  " if it's from PACKAGE::SOMETHING , find the package file , and parse
+  " subrouteins from the file , and the parent packages
+  " elseif 
+  "
+  " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
+  " the variables from the file . and the parent packages
   else
     echo 'do nothing'
       " do nothing 
   endif
 
+  setfiletype PLCompletionWindow
+  cal self.render_result( matches )
+
+  autocmd CursorMovedI <buffer>       call g:PLCompletionWindow.update_search()
+  autocmd BufWinLeave  <buffer>       call g:PLCompletionWindow.close()
+  " call self.refresh_buffer_name()
+endf
+
+fun! g:PLCompletionWindow.grep_entries(entries,pattern) 
+  let result = { }
+  for k in keys( a:entries )
+    let result[ k ] = filter( copy( a:entries[ k ] ) , 'v:val =~ ''^' . a:pattern . '''' )
+  endfor
+  return result
+endf
+
+fun! g:PLCompletionWindow.render_result(matches)
+  let out = ''
+  let f_pad = "\n  "
+  for k in keys( a:matches ) 
+    let out .= k
+    let out .=  f_pad . join( a:matches[k] ,  f_pad )
+    let out .= "\n"
+  endfor
+  silent put=out
+endf
+
+" XXX: Try PPI
+fun! g:PLCompletionWindow.grep_file_functions(file)
+  let out = system('grep -oP "(?<=^sub )\w+" ' . a:file )
+  return split( out , "\n" )
+endf
+
+fun! g:PLCompletionWindow.update_search()
   let pattern = getline('.')
-  let matches = filter( copy( func )  , 'v:val =~ ''^' . pattern . '''' )
+  let matches = self.grep_entries( self.resource , pattern )
   if len(matches) > 100 
     call remove( matches , 0 , 100 )
   endif
-
   let old = getpos('.')
   silent 2,$delete _
   cal self.render_result( matches )
@@ -909,37 +932,54 @@ fun! s:PLCompletionWindow.update_search()
   startinsert
 endf
 
-com! OpenPLCompletionWindow        :call s:PLCompletionWindow.open('botright', 'split',10,getline('.'))
-inoremap <C-x><C-x> <ESC>:OpenPLCompletionWindow<CR>
+fun! g:PLCompletionWindow.init_syntax()
+  if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
+    syn match EntryHeader +^\w\++
+    syn match EntryItem   +^\s\s\w\++
 
-"
+    hi EntryHeader ctermfg=magenta
+    hi EntryItem ctermfg=cyan
+  endif
+endf
+
+com! OpenPLCompletionWindow        :call g:PLCompletionWindow.open('botright', 'split',10,getline('.'))
+inoremap <C-x><C-x>                <ESC>:OpenPLCompletionWindow<CR>
+
 "fun! s:PLCompletionWindow.buffer_reload_init()
 "  call self.refresh_buffer_name()
 "  startinsert
 "  call cursor( 1 , col('$')  )
 "endf
 "
-"fun! s:PLCompletionWindow.init_mapping()
-"  " Module action bindings
-"  imap <silent> <buffer>     <Tab>   <Esc>:SwitchPLCompletionWindowMode<CR>
-"  nmap <silent> <buffer>     <Tab>   :SwitchPLCompletionWindowMode<CR>
-"  inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
-"  nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
+
+fun! g:PLCompletionWindow.do_complete()
+  let line = getline('.')
+  let pos = match( line , '\w\+' )
+  if line =~ '^\s\s'   " function entry 
+    let entry = strpart( line , pos )
+    " call setreg('f' , entry )
+    bw
+    " put f
+    call setline( line('.') , getline('.') . entry . '(  );' )
+    startinsert
+    call cursor( line('.') , col('$') - 3 )
+  endif
+endf
+
+fun! g:PLCompletionWindow.init_mapping()
+  " Module action bindings
+  " imap <silent> <buffer>     <Tab>   <Esc>:SwitchPLCompletionWindowMode<CR>
+  " nmap <silent> <buffer>     <Tab>   :SwitchPLCompletionWindowMode<CR>
+  " inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
+  " nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
+
+  " nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
+  " nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
+  nnoremap <script> <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
+  " nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+  " nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+endf
 "
-"  nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
-"  nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
-"
-"  nnoremap <silent> <buffer> <Enter> :call GotoModule()<CR>
-"  nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
-"  nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
-"endf
-"
-"fun! s:PLCompletionWindow.init_syntax()
-"  if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
-"    "hi CursorLine ctermbg=DarkCyan ctermfg=Black
-"    "hi Background ctermbg=darkblue
-"  endif
-"endf
 "
 "fun! s:PLCompletionWindow.switch_mode()
 "  let g:cpan_win_mode = g:cpan_win_mode + 1
