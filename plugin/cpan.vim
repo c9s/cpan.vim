@@ -306,14 +306,8 @@ fun! WindowManager.split(position,type,size)
 
     exec a:position . ' ' . a:size . act
     let self.buf_nr = bufnr('%')
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal nowrap
-    setlocal cursorline
-    setlocal nonumber
-    setlocal fdc=0
+    setlocal noswapfile buftype=nofile bufhidden=hide
+    setlocal nobuflisted nowrap cursorline nonumber fdc=0
     call self.init_buffer()
     call self.init_syntax()
     call self.init_basic_mapping()
@@ -869,6 +863,7 @@ fun! g:PLCompletionWindow.init_buffer()
   let lastkey = strpart( from , pos )
 
   let matches = { }
+
   " if it's from $self or $class, parse subroutines from current file
   " and parse parent packages , the maxima is by class depth
   if lastkey =~ '\$\(self\|class\)->' 
@@ -883,6 +878,7 @@ fun! g:PLCompletionWindow.init_buffer()
 
     let matches = self.grep_entries( self.resource , '' )
 
+  " XXX
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
   " elseif 
@@ -890,23 +886,30 @@ fun! g:PLCompletionWindow.init_buffer()
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
   else
-    echo 'do nothing'
-      " do nothing 
+    echo 'nothing to do'
   endif
 
   setfiletype PLCompletionWindow
+
+  call append(0, [">> PerlCompletion Window: Complete:<Enter>  Next/Previous Class:<Ctrl-j>/<Ctrl-k>  Next/Previous Entry:<Ctrl-n>/<Ctrl-p> ",""])
+
   cal self.render_result( matches )
 
   autocmd CursorMovedI <buffer>       call g:PLCompletionWindow.update_search()
   autocmd BufWinLeave  <buffer>       call g:PLCompletionWindow.close()
   " call self.refresh_buffer_name()
+  silent file PerlCompletion
+endf
+
+fun! g:PLCompletionWindow.start()
+  call cursor(2,1)
+  startinsert
 endf
 
 fun! g:PLCompletionWindow.find_base_class_files(file)
   let out = system('perl ' . expand('$HOME') . '/.vim/bin/find_base_classes.pl ' . a:file)
-  let lines = split(out,"\n")
   let classes = [ ]
-  for l in lines 
+  for l in split(out,"\n") 
     let [class,path] = split(l,' ')
     call insert(classes,[ class,path ])
   endfor
@@ -943,10 +946,10 @@ fun! g:PLCompletionWindow.grep_file_functions(file)
 endf
 
 fun! g:PLCompletionWindow.update_search()
-  let pattern = getline('.')
+  let pattern = getline( 2 )
   let matches = self.grep_entries( self.resource , pattern )
   let old = getpos('.')
-  silent 2,$delete _
+  silent 3,$delete _
   cal self.render_result( matches )
   cal setpos('.',old)
   startinsert
@@ -956,7 +959,6 @@ fun! g:PLCompletionWindow.init_syntax()
   if has("syntax") && exists("g:syntax_on") && !has("syntax_items")
     syn match EntryHeader +^[a-zA-Z0-9:_]\++
     syn match EntryItem   +^\s\s\w\++
-
     hi EntryHeader ctermfg=magenta
     hi EntryItem ctermfg=cyan
   endif
@@ -980,77 +982,15 @@ fun! g:PLCompletionWindow.do_complete()
 endf
 
 fun! g:PLCompletionWindow.init_mapping()
-  " Module action bindings
-  " imap <silent> <buffer>     <Tab>   <Esc>:SwitchPLCompletionWindowMode<CR>
-  " nmap <silent> <buffer>     <Tab>   :SwitchPLCompletionWindowMode<CR>
-  " inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
-  " nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
-
-  " nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
-  " nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> <Enter> :call g:PLCompletionWindow.do_complete()<CR>
   inoremap <silent> <buffer> <Enter> <ESC>jj:call g:PLCompletionWindow.do_complete()<CR>
 
-  " nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
-  " nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+  nnoremap <silent> <buffer> <C-j> :call search('^[a-zA-Z]')<CR>
+  nnoremap <silent> <buffer> <C-k> :call search('^[a-zA-Z]','b')<CR>
+
+  inoremap <silent> <buffer> <C-j> <ESC>:call search('^[a-zA-Z]')<CR>
+  inoremap <silent> <buffer> <C-k> <ESC>:call search('^[a-zA-Z]','b')<CR>
 endf
-
-
-
-"fun! s:PLCompletionWindow.switch_mode()
-"  let g:cpan_win_mode = g:cpan_win_mode + 1
-"  if g:cpan_win_mode == 4
-"    let g:cpan_win_mode = 1
-"  endif
-"  call self.refresh_buffer_name()
-"  call self.update_search()
-"  call cursor( 1, col('$') )
-"endf
-"
-"fun! s:PLCompletionWindow.refresh_buffer_name()
-"  if g:cpan_win_mode == g:CPAN.Mode.Installed 
-"    silent file CPAN\ (Installed)
-"  elseif g:cpan_win_mode == g:CPAN.Mode.All
-"    silent file CPAN\ (All)
-"  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
-"    silent file CPAN\ (CurrentLib)
-"  endif
-"endf
-"
-"
-"fun! s:PLCompletionWindow.update_search()
-"  let pattern = getline('.')
-"
-"  let pkgs = []
-"  if g:cpan_win_mode == g:CPAN.Mode.Installed
-"    cal PrepareInstalledCPANModuleCache()
-"    let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
-"  elseif g:cpan_win_mode == g:CPAN.Mode.All
-"    cal PrepareCPANModuleCache()
-"    let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
-"  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
-"    cal PrepareCurrentLibCPANModuleCache()
-"    let pkgs = filter( copy( g:cpan_curlib_pkgs ) , 'v:val =~ "' . pattern . '"' )
-"  endif
-"
-"  if len(pkgs) > g:cpan_max_result 
-"    let pkgs = remove( pkgs , 0 , g:cpan_max_result )
-"  endif
-"
-"  let old = getpos('.')
-"  silent 2,$delete _
-"  call self.render_result( pkgs )
-"  call setpos('.',old)
-"  startinsert
-"endfunc
-"
-"
-
-
-
-
-
-
 
 
 " Function header helper  {{{
@@ -1077,9 +1017,6 @@ fu! PodHelperFunctionHeader()
   :call cursor( line('.') - len( lines ) + 2 , 1  )
 endf
 " }}}
-
-
-
 
 
 
