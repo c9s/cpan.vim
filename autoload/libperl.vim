@@ -147,14 +147,14 @@ fun! libperl#find_base_classes(file)
   return classes
 endf
 
-fu! libperl#GetCompStartPos()
+" return [ lnum , col ]
+fu! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
 
-fu! libperl#GetCompBase()
+fu! libperl#get_pkg_comp_base()
   let col = col('.')
-  let pos = libperl#GetCompStartPos()
+  let [ lnum , coln ] = libperl#get_pkg_comp_start()
   let line = getline('.')
-  let base =  strpart( line , pos[1] , col )
-  return base
+  return strpart( getline('.') , coln , col )
 endf

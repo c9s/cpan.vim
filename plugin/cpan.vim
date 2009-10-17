@@ -458,7 +458,7 @@ endf
 "
 fu! CompleteInstalledCPANModuleList()
   cal PrepareInstalledCPANModuleCache()
-  let start_pos  = libperl#GetCompStartPos()
+  let start_pos  = libperl#GetPackageCompStartPos()
   let base = libperl#GetCompBase()
   echon "filtering..."
   " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
@@ -478,7 +478,7 @@ fu! CompleteCPANModuleList()
     let g:cpan_pkgs = GetCPANModuleList(0)
     echon "done"
   endif
-  let start_pos  = libperl#GetCompStartPos()
+  let start_pos  = libperl#GetPackageCompStartPos()
   let base = libperl#GetCompBase()
   echon "filtering..."
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
