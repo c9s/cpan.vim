@@ -124,20 +124,22 @@ fun! g:PLCompletionWindow.init_buffer()
     let pkg = self.comp_refer_base
     let filepath = libperl#GetModuleFilePath(pkg)
 
-    let class_comp = { 'class': pkg , 'refer': '' , 'functions': [ ] }
-    let class_comp.functions = libperl#grep_file_functions( filepath )
-    call insert( self.resource , class_comp )
+    if filepath 
+      let class_comp = { 'class': pkg , 'refer': '' , 'functions': [ ] }
+      let class_comp.functions = libperl#grep_file_functions( filepath )
+      call insert( self.resource , class_comp )
 
-    if g:plc_complete_base_class_func
-      let base_functions = libperl#parse_base_class_functions( filepath )
-      call extend( self.resource , base_functions )
+      if g:plc_complete_base_class_func
+        let base_functions = libperl#parse_base_class_functions( filepath )
+        call extend( self.resource , base_functions )
+      endif
     endif
 
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
   " the variables from the file . and the parent packages
   else
-    echo 'nothing to do'
+    self.resource = [ ]
   endif
 
   setfiletype PLCompletionWindow
