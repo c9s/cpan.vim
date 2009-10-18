@@ -319,7 +319,7 @@ endfunc
 
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
-    echon "preparing cpan module list..."
+    call libperl#echo( "preparing cpan module list...")
     let g:cpan_pkgs = GetCPANModuleList(0)
   endif
 endf
@@ -331,7 +331,7 @@ fu! PrepareInstalledCPANModuleCache()
 endf
 fu! PrepareCurrentLibCPANModuleCache()
   if len( g:cpan_curlib_pkgs ) == 0 
-    echon "preparing installed cpan module list..."
+    call libperl#echo("preparing installed cpan module list...")
     let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
   endif
 endf
@@ -340,9 +340,9 @@ endf
 fu! GetCPANModuleList(force)
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
     let path =  libperl#GetPackageSourceListPath()
-    echon "executing zcat: " . path
+    call libperl#echo("executing zcat: " . path )
     call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-    echon "done"
+    call libperl#echo("cached.")
   endif
   return readfile( g:cpan_source_cache )
 endf
@@ -350,26 +350,27 @@ endf
 fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    echo "finding packages from @INC... This might take a while. Press Ctrl-C to stop."
+    call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
           \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . g:cpan_installed_cache )
     " sed  's/^package //' | sed 's/;$//'
-    echo "ready"
+    call libperl#echo("ready")
   endif
   return readfile( g:cpan_installed_cache )
 endf
+
 " Return: current lib/ cpan module list [list]
 fu! GetCurrentLibCPANModuleList(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
-    echon "finding packages... from lib/"
+    call libperl#echo( "finding packages... from lib/" )
     call system( 'find lib -type f -iname "*.pm" ' 
           \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . cpan_curlib_cache )
-    echon "done"
+    call libperl#echo('cached')
   endif
   return readfile( cpan_curlib_cache )
 endf
