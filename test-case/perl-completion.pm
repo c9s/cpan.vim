@@ -31,7 +31,8 @@ sub translate_ticket_state {
     Params::Validate->
     Jifty->current_user()
     Any::Event->
-    Jifty::DBI::Record->
+    Jifty::DBI::Record->primary_keys( );
+
 
     # Ctrl-x Ctrl-m
     App::SD::U

@@ -57,6 +57,7 @@ runtime! plugin/window.vim
 
 let g:plc_complete_base_class_func = 1
 let g:plc_max_entries_per_class = 5
+let g:plc_complete_paren = 0
 
 let g:PLCompletionWindow = copy( WindowManager )
 
@@ -229,9 +230,15 @@ fun! g:PLCompletionWindow.do_complete()
   if line =~ '^\s\s'   " function entry 
     bw
     call libperl#clear_method_comp_base()
-    call setline( line('.') , getline('.') . entry . '()' )
-    startinsert
-    call cursor( line('.') , col('$') - 1 )
+    if g:plc_complete_paren 
+      call setline( line('.') , getline('.') . entry . '()' )
+      startinsert
+      call cursor( line('.') , col('$') - 1 )
+    else
+      call setline( line('.') , getline('.') . entry . '(' )
+      startinsert
+      call cursor( line('.') , col('$')  )
+    endif
   endif
 endf
 
