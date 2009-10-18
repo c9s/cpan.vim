@@ -3,6 +3,11 @@
 " let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
+fun! libperl#echo(msg)
+  redraw
+  echomsg a:msg
+endf
+
 fun! libperl#GetPerlLibPaths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf

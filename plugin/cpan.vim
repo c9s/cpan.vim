@@ -166,10 +166,6 @@ endif
 
 " Common Functions"{{{
 
-fun! s:echo(msg)
-  redraw
-  echomsg a:msg
-endf
 
 " check file expiry
 "    @file:    filename

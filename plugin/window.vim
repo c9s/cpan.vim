@@ -19,10 +19,16 @@ fun! WindowManager.split(position,type,size)
     let self.buf_nr = bufnr('%')
     setlocal noswapfile buftype=nofile bufhidden=hide
     setlocal nobuflisted nowrap cursorline nonumber fdc=0
-    call self.init_buffer()
-    call self.init_syntax()
-    call self.init_basic_mapping()
-    call self.init_mapping()
+
+    try
+      call self.init_buffer()
+      call self.init_syntax()
+      call self.init_basic_mapping()
+      call self.init_mapping()
+    catch /E\d\+/
+      echo "ERROR"
+      bw
+    endtry
 
     call self.start()
   elseif bufwinnr(self.buf_nr) == -1 
