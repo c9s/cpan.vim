@@ -30,32 +30,27 @@
 " then press <Enter> to complete with the selected item.
 " after all , the completion window should be closed
 "
+" type C-j , C-k to jump between package sections
+"
 " Completion Window:
 "
-" there are more than 1 parts to list completion in perl completion window
-" === BaseClass    (from 'use base qw//')
-" = accessors =
-" = variables =
-" = constants =
-" = functions =
-"
-" === CurrentClass (package [ ];)
-" = accessors =
-" = variables =
-" = constants = 
-" = functions =
-"
-"
-" Function List Item Format:
-"
 " App::Base::Class
-" [var name]
-" [function name]  (line nn)
-" [function name]  (line nn)
+"   [var name]
+"   [function name]  (line nn)
+"   [function name]  (line nn)
 "
 " App::Class
-" [var name]
-" [function name]  (line nn)
+"   [var name]
+"   [function name]  (line nn)
+"       ==review==
+"       sub function_name {
+"           my $self = shift;
+"           my @args = %_;
+"
+"   [function]       (line nn)
+"   [function]       (line nn)
+"   [function]       (line nn)
+"   [function]       (line nn)
 "}}}
 
 runtime! plugin/window.vim
