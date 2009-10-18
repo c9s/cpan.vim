@@ -43,10 +43,10 @@ fun! s:CtagsWindow.init_buffer()
     let file = self.input_path_for_ctags()
   endif
 
-  if strlen(file) == 0
-    echoerr "skip"
+  echo file
+  if ! file
+    throw "Error: not ctags file specified"
   endif
-
 
   cal libperl#echo( "Loading TagList..." )
   let self.resource = self.read_tags(file)   " XXX let it be configurable
