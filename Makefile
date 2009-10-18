@@ -13,7 +13,6 @@ install-deps:
 install-script:
 		mkdir -p ~/.vim/plugin
 		rsync -uvr plugin/  ~/.vim/plugin/
-		rsync -uvr autoload/ ~/.vim/autoload/
 		mkdir -p ~/.vim/perl
 		cp perl-functions ~/.vim/perl/
 		mkdir -p ~/.vim/bin/

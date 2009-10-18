@@ -25,7 +25,7 @@ sub translate_ticket_state {
     # Ctrl-x Ctrl-x
     $self->
     $self->ticket_id(someting)
-    $self->translate_status()
+    $self->
     $class->translate_ticket_state()
     $ticket->
     Params::Validate->
