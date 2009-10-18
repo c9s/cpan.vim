@@ -3,44 +3,46 @@ use warnings;
 use strict;
 eval qq{
     use PPI;
-    use PPI::Dumper;
 };
 die 'Please use cpan to install PPI' if $@ ;
 
 use constant depth => 3;
-use constant parse_head => 0;
+use constant grep_statement => 1;
 
 sub find_base_classes {
     my $file  = shift;
     my $d ;
-    if ( parse_head ) {
-        my $head = qx(head -n 100 $file);
+    if ( grep_statement ) {
+        my $head = qx(grep -A7 '^use base' $file);
         $d = PPI::Document->new( \$head );
     }
     else {
         $d = PPI::Document->new( $file );
     }
 
-    my $sts = $d->find( sub {
-        return $_[1]->isa('PPI::Statement::Include') and $_[1]->type eq 'use'
+    my $sts = $d->find( sub { 
+        return 1 if $_[1]->isa('PPI::Statement::Include') and $_[1]->type eq 'use';
+        return 0;
     });
+
+    return () unless $sts;
+
     my @bases = ();
     for my $st (@$sts) {
         my @elements = $st->children;
         my $is_base = $st->find( sub { $_[ 1 ]->content eq 'base' } );
         if ($is_base) {
             my @elements = $st->children();
-            my @e        = eval $elements[ 4 ]->content;
-            push @bases, @e;
+            push @bases, ( eval $elements[ 4 ]->content );   # 'use',' ','base','qw/ ...... /',';'
         }
     }
     return @bases;
 }
 
 sub translate_class {
-    my $class = shift;
-    my $class_file = $class; $class_file =~ s{::}{/}g; $class_file .= '.pm';
-    return $class_file;
+    my $class = $_[0];
+    $class =~ s{::}{/}g; 
+    return $class . '.pm';
 }
 
 sub find_module_files {
@@ -62,13 +64,9 @@ sub traverse_parent {
     my $lev   = shift || 1;
     $lev <= depth or return ();
 
-    my @result = ();
     my ($file) = find_module_files( $class );
-    push @result,[ $class , $refer , $file ];
-    for my $base ( find_base_classes( $file ) ) {
-        push @result, traverse_parent( $base , $class , $lev + 1 );
-    }
-    return @result;
+    my @result = ( [ $class , $refer , $file ] );
+    return @result , map { traverse_parent( $_ , $class , $lev + 1 ) } find_base_classes( $file ) ;
 }
 
 # format: 
