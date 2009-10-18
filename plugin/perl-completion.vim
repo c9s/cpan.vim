@@ -121,11 +121,15 @@ fun! g:PLCompletionWindow.init_buffer()
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
   elseif self.comp_refer_base =~ g:libperl#pkg_token_pattern 
-    let pkg = self.comp_refer_base
-    let filepath = libperl#GetModuleFilePath(pkg)
+    let class = self.comp_refer_base
+    let filepath = libperl#GetModuleFilePath(class)
+
+    if ! filepath 
+      throw 'SKIP: no completions for this package: ' .class 
+    endif
 
     if filepath 
-      let class_comp = { 'class': pkg , 'refer': '' , 'functions': [ ] }
+      let class_comp = { 'class': class , 'refer': '' , 'functions': [ ] }
       let class_comp.functions = libperl#grep_file_functions( filepath )
       call insert( self.resource , class_comp )
 

@@ -25,6 +25,10 @@ fun! WindowManager.split(position,type,size)
       call self.init_syntax()
       call self.init_basic_mapping()
       call self.init_mapping()
+    catch /^SKIP:/
+      bw
+      call libperl#echo( v:exception )
+      return
     catch /^ERROR:/
       echo v:exception
       bw " close buffer
