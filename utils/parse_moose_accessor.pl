@@ -7,8 +7,8 @@ use PPI;
 my @types = qw(Item Undef Defined Bool Value Ref Str Num Int ScalarRef CodeRef RegexpRef GlobRef FileHandle Object Role ClassName RoleName);
 
 # XXX:
-#
 #  should skip basic data types: Str , Int , Hash ... etc
+
 my $file = shift;
 my $d = PPI::Document->new( $file );
 

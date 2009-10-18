@@ -29,7 +29,7 @@ sub translate_ticket_state {
     $class->translate_ticket_state()
     $ticket->
     Params::Validate->
-    Jifty->
+    Jifty->handler
     Jifty::DBI::Record->
 
 

@@ -48,6 +48,9 @@ x built-in function search
       ORZ->do_so
 
 * complete function name from module exported function
-* should support moose 'extends' statement
-* should support moose 'has' statement
-* should support moose '->meta' statement
+* support moose 'extends' statement
+* support moose 'has' statement
+* support moose '->meta' statement
+* support class::accessor 
+* support $self->{hashes}
+    parse something like $self->{ \w+ } from class

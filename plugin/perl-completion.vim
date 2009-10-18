@@ -258,7 +258,7 @@ fun! g:PLCompletionWindow.do_complete()
       startinsert
       call cursor( line('.') , col('$') - 1 )
     else
-      call setline( line('.') , getline('.') . entry . '(' )
+      call setline( line('.') , getline('.') . entry )
       startinsert
       call cursor( line('.') , col('$')  )
     endif
