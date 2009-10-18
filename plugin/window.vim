@@ -20,15 +20,15 @@ fun! WindowManager.split(position,type,size)
     setlocal noswapfile buftype=nofile bufhidden=hide
     setlocal nobuflisted nowrap cursorline nonumber fdc=0
 
-    try
+    "try
       call self.init_buffer()
       call self.init_syntax()
       call self.init_basic_mapping()
       call self.init_mapping()
-    catch /E\d\+/
-      echo "ERROR"
-      bw
-    endtry
+    "catch /E\d\+/
+      "echo "ERROR"
+      " bw
+    "endtry
 
     call self.start()
   elseif bufwinnr(self.buf_nr) == -1 

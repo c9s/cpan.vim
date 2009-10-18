@@ -325,7 +325,7 @@ fu! PrepareCPANModuleCache()
 endf
 fu! PrepareInstalledCPANModuleCache()
   if len( g:cpan_installed_pkgs ) == 0 
-    call s:echo("preparing installed cpan module list...")
+    call libperl#echo("preparing installed cpan module list...")
     let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
   endif
 endf
