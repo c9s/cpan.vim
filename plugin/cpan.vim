@@ -497,8 +497,8 @@ com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_w
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <C-c><C-m>        :OpenCPANWindowS<CR>
-nnoremap <C-c><C-v>        :OpenCPANWindowSV<CR>
+nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
+nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 
 nnoremap <C-x><C-i>        :call libperl#InstallCPANModule()<CR>
