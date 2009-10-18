@@ -1,14 +1,16 @@
 " vim:fdm=syntax:fdl=1:et:sw=2:
 " Perl Completion Features:"{{{
 "
-" when user type '$self' or '$class' , press [key] to trigger completion function
-"   (or just map '->' key to trigger completion function)
+" Self Completion:
+"
+"   when user type '$self->' or '$class->' , press [key] to trigger completion function
+"       (or just map '->' key to trigger completion function)
 "           
 "           the completion should include:
 "               function name
 "               accessor
 "
-"   then it should complete the '->' and open a completion window 
+"   and should complete the '->' and open a completion window 
 "   and list all matched items
 " 
 " when user type $App::Class:: , then press [key] to trigger completion function
@@ -22,9 +24,30 @@
 "               function name
 "               constants
 "
-" when user typing, it should automatically update the line (option)
-" and update completion result in the bottom window , and highlight 
-" the matched part
+" Synopsis For Moose:
+"
+"   for perl moose program like:
+"
+"     use Moose;
+"
+"     has sync_source => 
+"         ( isa => 'App::SD::Replica::rt',
+"           is => 'rw');
+"
+"   when user type $self->  then press key to complete:
+"     should complete sync_source  and other functions from $self
+"
+"   when user type $self->sync_source-> , then press key to complete:
+"     should complete the methods that sync_source class provided.
+"
+"
+" Other Features:
+"   when completion item just found one, should just append the completion ,
+"   not to open the completion window
+"
+"   when user typing, it should automatically update the line (option)
+"   and update completion result in the bottom window , and highlight 
+"   the matched part
 "
 " user type C-n , C-p to select item to complete
 " then press <Enter> to complete with the selected item.
