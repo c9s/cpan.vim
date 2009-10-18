@@ -8,11 +8,19 @@ eval qq{
 die 'Please use cpan to install PPI' if $@ ;
 
 use constant depth => 3;
+use constant parse_head => 0;
 
 sub find_base_classes {
     my $file  = shift;
-    my $head = qx(head -n 20 $file);
-    my $d = PPI::Document->new( \$head );
+    my $d ;
+    if ( parse_head ) {
+        my $head = qx(head -n 100 $file);
+        $d = PPI::Document->new( \$head );
+    }
+    else {
+        $d = PPI::Document->new( $file );
+    }
+
     my $sts = $d->find( sub {
         return $_[1]->isa('PPI::Statement::Include') and $_[1]->type eq 'use'
     });
