@@ -60,6 +60,7 @@
 
 runtime! plugin/window.vim
 
+let g:plc_complete_base_class_func = 1
 let g:plc_max_entries_per_class = 5
 
 let g:PLCompletionWindow = copy( WindowManager )
@@ -112,8 +113,10 @@ fun! g:PLCompletionWindow.init_buffer()
     let _self.functions = libperl#grep_file_functions( self.current_file )
     call insert(self.resource, _self )
 
-    let base_functions = libperl#parse_base_class_functions( self.current_file )
-    call extend( self.resource , base_functions )
+    if g:plc_complete_base_class_func
+      let base_functions = libperl#parse_base_class_functions( self.current_file )
+      call extend( self.resource , base_functions )
+    endif
 
   " if it's from PACKAGE::SOMETHING , find the package file , and parse
   " subrouteins from the file , and the parent packages
@@ -125,8 +128,10 @@ fun! g:PLCompletionWindow.init_buffer()
     let class_comp.functions = libperl#grep_file_functions( filepath )
     call insert( self.resource , class_comp )
 
-    let base_functions = libperl#parse_base_class_functions( filepath )
-    call extend( self.resource , base_functions )
+    if g:plc_complete_base_class_func
+      let base_functions = libperl#parse_base_class_functions( filepath )
+      call extend( self.resource , base_functions )
+    endif
 
   " XXX
   " if it's from $PACKAGE::Some.. , find the PACAKGE file , and parse 
