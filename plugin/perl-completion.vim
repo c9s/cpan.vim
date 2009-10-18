@@ -119,19 +119,17 @@ fun! g:PLCompletionWindow.init_buffer()
     let class = self.comp_refer_base
     let filepath = libperl#GetModuleFilePath(class)
 
-    if ! filepath 
+    if ! filereadable(filepath)
       throw 'SKIP: no completions for this package: ' .class 
     endif
 
-    if filepath 
-      let class_comp = { 'class': class , 'refer': '' , 'functions': [ ] }
-      let class_comp.functions = libperl#grep_file_functions( filepath )
-      call insert( self.resource , class_comp )
+    let class_comp = { 'class': class , 'refer': '' , 'functions': [ ] }
+    let class_comp.functions = libperl#grep_file_functions( filepath )
+    call insert( self.resource , class_comp )
 
-      if g:plc_complete_base_class_func
-        let base_functions = libperl#parse_base_class_functions( filepath )
-        call extend( self.resource , base_functions )
-      endif
+    if g:plc_complete_base_class_func
+      let base_functions = libperl#parse_base_class_functions( filepath )
+      call extend( self.resource , base_functions )
     endif
 
   " XXX

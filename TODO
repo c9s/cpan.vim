@@ -48,4 +48,4 @@ x built-in function search
       ORZ->do_so
 
 * complete function name from module exported function
-
+* should support moose 'extends' statement
