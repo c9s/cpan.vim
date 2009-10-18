@@ -6,22 +6,33 @@ eval qq{
 };
 die 'Please use cpan to install PPI' if $@ ;
 
+my $filename = shift;
+
 use constant depth => 3;
-use constant grep_statement => 1;
+use constant grep_statement => 0;
 
 sub find_base_classes {
     my $file  = shift;
+
+    return () unless( $file );
+    return () if ( $file and ! -e $file );
+
     my $d ;
     if ( grep_statement ) {
-        my $head = qx(grep -A7 '^use base' $file);
+        my $head = qx{egrep -A7 '^(use base|extends)' $file};
         $d = PPI::Document->new( \$head );
     }
     else {
         $d = PPI::Document->new( $file );
     }
 
+    # use PPI::Dumper;
+    # my $dd = PPI::Dumper->new( $d );
+    # $dd->print;
+
     my $sts = $d->find( sub { 
         return 1 if $_[1]->isa('PPI::Statement::Include') and $_[1]->type eq 'use';
+        return 1 if $_[1]->isa('PPI::Statement');  # for Moose 'extends' statement
         return 0;
     });
 
@@ -29,12 +40,18 @@ sub find_base_classes {
 
     my @bases = ();
     for my $st (@$sts) {
+
         my @elements = $st->children;
-        my $is_base = $st->find( sub { $_[ 1 ]->content eq 'base' } );
-        if ($is_base) {
-            my @elements = $st->children();
+
+        # for Moose 'extends' statement
+        if( $st->isa('PPI::Statement') and $elements[0]->content eq 'extends' ) {
+            push @bases, ( eval $elements[ 2 ]->content );
+        }
+        # it's from "use base"
+        elsif( $st->isa('PPI::Statement::Include') and $elements[2]->content eq 'base' ) {
             push @bases, ( eval $elements[ 4 ]->content );   # 'use',' ','base','qw/ ...... /',';'
         }
+
     }
     return @bases;
 }
@@ -65,10 +82,10 @@ sub traverse_parent {
     $lev <= depth or return ();
 
     my ($file) = find_module_files( $class );
-    my @result = ( [ $class , $refer , $file ] );
+    my @result = ( [ $class , $refer , $file || '' ] );
     return @result , map { traverse_parent( $_ , $class , $lev + 1 ) } find_base_classes( $file ) ;
 }
 
-# format: 
-#    base_class base_class_refer file
-map { print join(" ",@$_)."\n" } map { traverse_parent($_) } find_base_classes( shift );
+map { print $_ ? join(" ", @$_ ) . "\n" : '' }  
+      map { traverse_parent($_) } find_base_classes( $filename );
+
