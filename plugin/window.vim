@@ -1,7 +1,9 @@
 " ==== Window Manager =========================================== {{{
 
 if exists('g:window_manager_loaded') | finish | endif
+
 let g:window_manager_loaded = 0.2
+let g:warning_preserve_time = '700m'
 
 let WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
 
@@ -12,6 +14,7 @@ fun! WindowManager.open(pos,type,size)
   if exists('g:AutoComplPop_Behavior') && exists("#CursorMovedI")
     " then we should disable it , because the autocmd CursorMoveI conflicts
     call libperl#echo("AutoComplPop Disabled: the cursor moved event of autocomplpop conflicts with me.")
+    exec 'sleep ' . g:warning_preserve_time 
     AutoComplPopDisable
     let s:reveal_autocomplpop = 1
   endif
