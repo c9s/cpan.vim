@@ -29,9 +29,8 @@ sub translate_ticket_state {
     $class->translate_ticket_state()
     $ticket->
     Params::Validate->
-    Jifty->current_user()
-    AnyEvent->
-    Jifty::DBI::Record->_init_columns($orz);
+    Jifty->
+    Jifty::DBI::Record->
 
 
 

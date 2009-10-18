@@ -9,7 +9,7 @@ die 'Please use cpan to install PPI' if $@ ;
 my $filename = shift;
 
 use constant depth => 3;
-use constant grep_statement => 0;
+use constant grep_statement => 1;
 
 sub find_base_classes {
     my $file  = shift;
