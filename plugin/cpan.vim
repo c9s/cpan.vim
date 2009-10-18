@@ -157,9 +157,9 @@ else  " default
 endif
 
 if executable('cpanp')
-  let g:cpan_install_command = 'cpanp i'
+  let g:cpan_install_command = 'sudo cpanp i'
 elseif executable('cpan')
-  let g:cpan_install_command = 'cpan'
+  let g:cpan_install_command = 'sudo cpan'
 endif
 " }}}
 
