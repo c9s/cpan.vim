@@ -11,7 +11,9 @@ use constant depth => 3;
 
 sub find_base_classes {
     my $file  = shift;
-    my $d = PPI::Document->new( $file );
+    my $head = qx(head -n 20 $file);
+    print $head;
+    my $d = PPI::Document->new( \$head );
     my $sts = $d->find( sub {
         return $_[1]->isa('PPI::Statement::Include') and $_[1]->type eq 'use'
     });
