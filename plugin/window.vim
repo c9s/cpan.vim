@@ -25,8 +25,8 @@ fun! WindowManager.split(position,type,size)
       call self.init_syntax()
       call self.init_basic_mapping()
       call self.init_mapping()
-    catch /^Error:/
-      echo "ERROR"
+    catch /^ERROR:/
+      echo v:exception
       bw " close buffer
       return
     endtry

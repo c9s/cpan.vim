@@ -43,9 +43,8 @@ fun! s:CtagsWindow.init_buffer()
     let file = self.input_path_for_ctags()
   endif
 
-  echo file
   if ! file
-    throw "Error: not ctags file specified"
+    throw "ERROR: not ctags file specified"
   endif
 
   cal libperl#echo( "Loading TagList..." )
