@@ -38,12 +38,11 @@ fun! s:CtagsWindow.init_buffer()
   setfiletype ctagsearch
   let file = self.find_ctags_file()
 
-
   if ! filereadable(file)
     let file = self.input_path_for_ctags()
   endif
 
-  if ! file
+  if ! filereadable(file)
     throw "ERROR: not ctags file specified"
   endif
 
