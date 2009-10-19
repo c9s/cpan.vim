@@ -10,7 +10,10 @@ install: install-script install-deps
 install-deps:
 		cpan PPI 
 
-install-script:
+install-libperl:
+		wget -nv http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim -O ~/.vim/autoload/libperl.vim
+
+install-script: install-libperl
 		mkdir -p ~/.vim/plugin
 		rsync -uvr plugin/  ~/.vim/plugin/
 		mkdir -p ~/.vim/perl

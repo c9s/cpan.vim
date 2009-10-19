@@ -36,6 +36,12 @@
 "   * cpan module completion
 "   * browser integration
 "
+" Requirement:
+"
+"   libperl.vim
+"
+"       http://github.com/c9s/libperl.vim/
+"       
 " Install:
 "
 "   $ make install 
@@ -117,8 +123,13 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
+if ! exists('g:libperl#lib_version')
+  echoerr 'cpan.vim: please install libperl.vim'
+  finish
+endif
 
 " we need window manager class
+
 runtime plugin/window.vim
 
 " version check {{{
@@ -339,7 +350,7 @@ endf
 " Return: cpan module list [list]
 fu! GetCPANModuleList(force)
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
-    let path =  libperl#GetPackageSourceListPath()
+    let path =  libperl#get_package_sourcelist_path()
     call libperl#echo("executing zcat: " . path )
     call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
     call libperl#echo("cached.")
@@ -502,8 +513,8 @@ nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 
-nnoremap <C-x><C-i>        :call libperl#InstallCPANModule()<CR>
-nnoremap <C-c>g            :call libperl#TabGotoModuleFileFromCursor()<CR>
+nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
+nnoremap <C-c>g            :call libperl#tab_goto_module_file_from_cursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
