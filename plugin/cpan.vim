@@ -36,6 +36,12 @@
 "   * cpan module completion
 "   * browser integration
 "
+" Requirement:
+"
+"   libperl.vim
+"
+"       http://github.com/c9s/libperl.vim/
+"       
 " Install:
 "
 "   $ make install 
@@ -117,8 +123,13 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
+if ! exists('g:libperl#lib_version')
+  echoerr 'cpan.vim: please install libperl.vim'
+  finish
+endif
 
 " we need window manager class
+
 runtime plugin/window.vim
 
 " version check {{{
