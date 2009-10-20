@@ -280,7 +280,7 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
   nnoremap <silent> <buffer> <Enter> :call libperl#open_module()<CR>
-  nnoremap <silent> <buffer> t       :call tab_open_module_file_in_paths( getline('.') )<CR>
+  nnoremap <silent> <buffer> t       :call libperl#tab_open_module_file_in_paths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
