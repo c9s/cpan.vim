@@ -125,7 +125,7 @@
 " }}}
 "
 " XXX: require version 0.3
-if ! exists('g:libperl#lib_version')
+if ! exists('g:libperl#lib_version') || g:libperl#lib_version < 0.3
   echoerr 'cpan.vim: please install libperl.vim'
   finish
 endif
@@ -279,8 +279,8 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
 
-  nnoremap <silent> <buffer> <Enter> :call libperl#GotoModule()<CR>
-  nnoremap <silent> <buffer> t       :call TabGotoModuleFileInPaths( getline('.') )<CR>
+  nnoremap <silent> <buffer> <Enter> :call libperl#open_module()<CR>
+  nnoremap <silent> <buffer> t       :call tab_open_module_file_in_paths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
 endf
 
@@ -506,7 +506,7 @@ nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 
 nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
-nnoremap <C-c>g            :call libperl#tab_goto_module_file_from_cursor()<CR>
+nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 com! ReloadModuleCache              :let g:cpan_pkgs = libperl#get_cpan_module_list(1)
