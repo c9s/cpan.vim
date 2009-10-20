@@ -123,6 +123,8 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
+"
+" XXX: require version 0.3
 if ! exists('g:libperl#lib_version')
   echoerr 'cpan.vim: please install libperl.vim'
   finish
@@ -331,35 +333,24 @@ endfunc
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
     cal libperl#echo( "preparing cpan module list...")
-    let g:cpan_pkgs = GetCPANModuleList(0)
+    let g:cpan_pkgs = libperl#get_cpan_module_list(0)
   endif
 endf
 fu! PrepareInstalledCPANModuleCache()
   if len( g:cpan_installed_pkgs ) == 0 
     cal libperl#echo("preparing installed cpan module list...")
-    let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
+    let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(0)
   endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
   if len( g:cpan_curlib_pkgs ) == 0 
-    cal libperl#echo("preparing installed cpan module list...")
-    let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
+    cal libperl#echo("preparing currentlib cpan module list...")
+    let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(0)
   endif
-endf
-
-" Return: cpan module list [list]
-fu! GetCPANModuleList(force)
-  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
-    let path =  libperl#get_package_sourcelist_path()
-    cal libperl#echo("executing zcat: " . path )
-    cal system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-    cal libperl#echo("cached.")
-  endif
-  return readfile( g:cpan_source_cache )
 endf
 
 " Return: installed cpan module list [list]
-fu! GetInstalledCPANModuleList(force)
+fu! libperl#get_installed_cpan_module_list(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
@@ -374,7 +365,7 @@ fu! GetInstalledCPANModuleList(force)
 endf
 
 " Return: current lib/ cpan module list [list]
-fu! GetCurrentLibCPANModuleList(force)
+fu! libperl#get_currentlib_cpan_module_list(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     call libperl#echo( "finding packages... from lib/" )
@@ -484,7 +475,7 @@ endf
 fu! CompleteCPANModuleList()
   if len( g:cpan_pkgs ) == 0 
     echon "preparing cpan module list..."
-    let g:cpan_pkgs = GetCPANModuleList(0)
+    let g:cpan_pkgs = libperl#get_cpan_module_list(0)
     echon "done"
   endif
   let start_pos  = libperl#get_pkg_comp_start()
@@ -518,6 +509,6 @@ nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
 nnoremap <C-c>g            :call libperl#tab_goto_module_file_from_cursor()<CR>
 nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
-com! ReloadModuleCache              :let g:cpan_pkgs = GetCPANModuleList(1)
-com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = GetInstalledCPANModuleList(1)
-com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(1)
+com! ReloadModuleCache              :let g:cpan_pkgs = libperl#get_cpan_module_list(1)
+com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(1)
+com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(1)
