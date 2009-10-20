@@ -330,19 +330,19 @@ endfunc
 
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
-    call libperl#echo( "preparing cpan module list...")
+    cal libperl#echo( "preparing cpan module list...")
     let g:cpan_pkgs = GetCPANModuleList(0)
   endif
 endf
 fu! PrepareInstalledCPANModuleCache()
   if len( g:cpan_installed_pkgs ) == 0 
-    call libperl#echo("preparing installed cpan module list...")
+    cal libperl#echo("preparing installed cpan module list...")
     let g:cpan_installed_pkgs = GetInstalledCPANModuleList(0)
   endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
   if len( g:cpan_curlib_pkgs ) == 0 
-    call libperl#echo("preparing installed cpan module list...")
+    cal libperl#echo("preparing installed cpan module list...")
     let g:cpan_curlib_pkgs = GetCurrentLibCPANModuleList(0)
   endif
 endf
@@ -351,12 +351,13 @@ endf
 fu! GetCPANModuleList(force)
   if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
     let path =  libperl#get_package_sourcelist_path()
-    call libperl#echo("executing zcat: " . path )
-    call system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-    call libperl#echo("cached.")
+    cal libperl#echo("executing zcat: " . path )
+    cal system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
+    cal libperl#echo("cached.")
   endif
   return readfile( g:cpan_source_cache )
 endf
+
 " Return: installed cpan module list [list]
 fu! GetInstalledCPANModuleList(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
