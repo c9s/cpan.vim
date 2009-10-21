@@ -1,18 +1,9 @@
 " ==== Window Manager =========================================== {{{
 
-if exists('g:window_manager_loaded') | finish | endif
 
-let g:window_manager_loaded = 0.2
-let g:warning_preserve_time = '700m'
+let g:AutoComplPopGuard = { }
+fun! g:AutoComplPopGuard.check()
 
-let WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
-
-fun! WindowManager.open(pos,type,size)
-  call self.check_autocomlpop()
-  call self.split(a:pos,a:type,a:size)
-endf
-
-fun! WindowManager.check_autocomlpop()
   " check for autocomplpop.vim
   " we can not check loaded_autocomplpop variable , because we might load
   " window.vim before we load autocomplpop.
@@ -23,7 +14,30 @@ fun! WindowManager.check_autocomlpop()
     AutoComplPopDisable
     let s:reveal_autocomplpop = 1
   endif
+
 endf
+
+fun! g:AutoComplPopGuard.reveal()
+  if exists('g:AutoComplPop_Behavior') && exists('s:reveal_autocomplpop')
+    call libperl#echo("AutoComplPop Enabled.")
+    AutoComplPopEnable
+    unlet s:reveal_autocomplpop 
+  endif
+endf
+
+
+if exists('g:window_manager_loaded') | finish | endif
+
+let g:window_manager_loaded = 0.2
+let g:warning_preserve_time = '700m'
+
+let WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
+
+fun! WindowManager.open(pos,type,size)
+  call g:AutoComplPopGuard.check();
+  call self.split(a:pos,a:type,a:size)
+endf
+
 
 fun! WindowManager.split(position,type,size)
   if ! bufexists( self.buf_nr )
@@ -112,19 +126,10 @@ fun! WindowManager.render_result(matches)
   silent put=r
 endf
 
-fun! WindowManager.reveal_autocomplpop()
-  if exists('g:AutoComplPop_Behavior') && exists('s:reveal_autocomplpop')
-    call libperl#echo("AutoComplPop Enabled.")
-    AutoComplPopEnable
-    unlet s:reveal_autocomplpop 
-  endif
-endf
-
-
 fun! WindowManager.close()
   " since we call buffer back , we dont need to remove buffername
   " silent 0f
-  call self.reveal_autocomplpop()
+  call g:AutoComplPopGuard.reveal()
   redraw
 endf
 

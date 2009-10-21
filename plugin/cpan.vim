@@ -493,8 +493,6 @@ com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
 com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
 nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 
-
-
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
@@ -503,7 +501,6 @@ com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_w
 inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
 nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
-
 
 nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
 nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>
