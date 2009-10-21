@@ -141,7 +141,7 @@ fun! g:PLCompletionWindow.init_buffer()
   " subrouteins from the file , and the parent packages
   elseif self.comp_refer_base =~ g:libperl#pkg_token_pattern 
     let class = self.comp_refer_base
-    let filepath = libperl#GetModuleFilePath(class)
+    let filepath = libperl#get_module_file_path(class)
 
     if ! filereadable(filepath)
       throw 'SKIP: no completions for this package: ' .class 
