@@ -1,4 +1,7 @@
 " ==== Window Manager =========================================== {{{
+if exists('g:window_manager_loaded') | finish | endif
+
+let g:window_manager_version = 0.3
 
 
 let g:AutoComplPopGuard = { }
@@ -24,9 +27,6 @@ fun! g:AutoComplPopGuard.reveal()
     unlet s:reveal_autocomplpop 
   endif
 endf
-
-
-if exists('g:window_manager_loaded') | finish | endif
 
 let g:window_manager_loaded = 0.2
 let g:warning_preserve_time = '700m'
