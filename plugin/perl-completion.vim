@@ -85,6 +85,9 @@ let g:plc_complete_paren = 0
 let g:PLCompletionWindow = copy( WindowManager )
 
 fun! g:PLCompletionWindow.open(pos,type,size,from)
+
+  call self.check_autocomlpop()
+
   let self.resource = [ ]
   let self.from = a:from   " self.from = getline('.')
   let self.current_file = expand('%')
@@ -104,6 +107,7 @@ endf
 
 fun! g:PLCompletionWindow.close()
   bw  " we should clean up buffer in every completion
+  call self.reveal_autocomplpop()
   call garbagecollect()
   redraw
 endf

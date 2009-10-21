@@ -1,9 +1,11 @@
 #!/bin/bash
 
 
-all:
-
-
+link:
+		ln -fs `pwd`/plugin/cpan.vim ~/.vim/plugin/cpan.vim 
+		ln -fs `pwd`/plugin/window.vim ~/.vim/plugin/window.vim 
+		ln -fs `pwd`/plugin/ctags-search.vim ~/.vim/plugin/ctags-search.vim
+		ln -fs `pwd`/plugin/perl-completion.vim ~/.vim/plugin/perl-completion.vim
 
 install: install-script install-deps
 
