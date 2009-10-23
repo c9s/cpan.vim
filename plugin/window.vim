@@ -2,11 +2,12 @@
 if exists('g:window_manager_loaded') | finish | endif
 
 let g:window_manager_version = 0.3
+let g:window_manager_loaded = 1
 
+let g:warning_preserve_time = '700m'
 
 let g:AutoComplPopGuard = { }
 fun! g:AutoComplPopGuard.check()
-
   " check for autocomplpop.vim
   " we can not check loaded_autocomplpop variable , because we might load
   " window.vim before we load autocomplpop.
@@ -15,29 +16,25 @@ fun! g:AutoComplPopGuard.check()
     call libperl#echo("AutoComplPop Disabled: the cursor moved event of autocomplpop conflicts with me.")
     exec 'sleep ' . g:warning_preserve_time 
     AutoComplPopDisable
-    let s:reveal_autocomplpop = 1
+    let reveal_autocomplpop = 1
   endif
-
 endf
 
 fun! g:AutoComplPopGuard.reveal()
-  if exists('g:AutoComplPop_Behavior') && exists('s:reveal_autocomplpop')
+  if exists('g:AutoComplPop_Behavior') && exists('reveal_autocomplpop')
     call libperl#echo("AutoComplPop Enabled.")
     AutoComplPopEnable
-    unlet s:reveal_autocomplpop 
+    unlet reveal_autocomplpop 
   endif
 endf
 
-let g:window_manager_loaded = 0.2
-let g:warning_preserve_time = '700m'
 
 let WindowManager = { 'buf_nr' : -1 , 'mode' : 0 }
 
 fun! WindowManager.open(pos,type,size)
-  call g:AutoComplPopGuard.check();
+  call g:AutoComplPopGuard.check()
   call self.split(a:pos,a:type,a:size)
 endf
-
 
 fun! WindowManager.split(position,type,size)
   if ! bufexists( self.buf_nr )
