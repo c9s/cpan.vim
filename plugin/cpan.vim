@@ -234,7 +234,7 @@ endf
 
 fun! s:FunctionWindow.update_search()
   let pattern = getline(1)
-  let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
+  let matches = filter( copy( self.resource )  , 'v:val =~ ''' . pattern . '''' )
   let old = getpos('.')
   silent 2,$delete _
   cal self.render_result( matches )
