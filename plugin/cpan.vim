@@ -218,9 +218,9 @@ endf
 
 fun! s:FunctionWindow.init_buffer()
   setfiletype perlfunctionwindow
-  echon "Loading Function List..."
+  call libperl#echo( "Loading Function List...")
   let self.resource = readfile( expand('~/.vim/perl/perl-functions') )
-  echon "Done"
+  call libperl#echo( "Ready" )
   cal self.render_result( self.resource )
   autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
   silent file Perl\ Builtin\ Functions
@@ -460,7 +460,7 @@ fu! CompleteInstalledCPANModuleList()
   cal PrepareInstalledCPANModuleCache()
   let start_pos  = libperl#get_pkg_comp_start()
   let base = libperl#get_pkg_comp_base()
-  echon "filtering..."
+  call libperl#echo( "filtering..." )
   " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
   let res = []
   for p in g:cpan_installed_pkgs 
@@ -474,13 +474,13 @@ endf
 
 fu! CompleteCPANModuleList()
   if len( g:cpan_pkgs ) == 0 
-    echon "preparing cpan module list..."
+    call libperl#echo("preparing cpan module list...")
     let g:cpan_pkgs = libperl#get_cpan_module_list(0)
-    echon "done"
+    call libperl#echo("done")
   endif
   let start_pos  = libperl#get_pkg_comp_start()
   let base = libperl#get_pkg_comp_base()
-  echon "filtering..."
+  call libperl#echo("filtering")
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
   call complete( start_pos[1]+1 , res )
   return ''
