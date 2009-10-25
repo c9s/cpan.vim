@@ -13,8 +13,11 @@ fun! g:AutoComplPopGuard.check()
   " window.vim before we load autocomplpop.
   if exists('g:AutoComplPop_Behavior') && exists("#CursorMovedI")
     " then we should disable it , because the autocmd CursorMoveI conflicts
-    call libperl#echo("AutoComplPop Disabled: the cursor moved event of autocomplpop conflicts with me.")
-    exec 'sleep ' . g:warning_preserve_time 
+    if ! exists('s:autocomplpop_warning_show') 
+      call libperl#echo("AutoComplPop Disabled: the cursor moved event of autocomplpop conflicts with me.")
+      exec 'sleep ' . g:warning_preserve_time 
+      let  s:autocomplpop_warning_show = 1
+    endif
     AutoComplPopDisable
     let reveal_autocomplpop = 1
   endif
