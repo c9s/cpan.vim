@@ -1,14 +1,12 @@
 cpan.vim
 ========
 Vim plugin for perl hackers
-
-Author:      Cornelius ( 林佑安 ) <cornelius.howl@DELETE-ME.gmail.com>
-Site:        http://oulixe.us/
-Date:        Sun Sep 19 10:47:15 2009
-Repository:  http://github.com/c9s/cpan.vim
-Screencast:  [cpan.vim](http://www.youtube.com/watch?v=erF0NWUIbr4)
-
-Keywords: perl , cpan , vim
+- Author:      Cornelius ( 林佑安 ) <cornelius.howl@DELETE-ME.gmail.com>
+- Site:        http://oulixe.us/
+- Date:        Sun Sep 19 10:47:15 2009
+- Repository:  http://github.com/c9s/cpan.vim
+- Screencast:  [cpan.vim](http://www.youtube.com/watch?v=erF0NWUIbr4)
+- Keywords: perl , cpan , vim
 
 FEATURES
 ========
