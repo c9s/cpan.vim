@@ -84,9 +84,10 @@ let g:plc_complete_paren = 0
 
 let g:PLCompletionWindow = copy( WindowManager )
 
-fun! g:PLCompletionWindow.open(pos,type,size,from)
-  call g:AutoComplPopGuard.check()
 
+
+
+fun! g:PLCompletionWindow.open(pos,type,size,from)
   let self.resource = [ ]
   let self.from = a:from   " self.from = getline('.')
   let self.current_file = expand('%')
@@ -99,8 +100,11 @@ fun! g:PLCompletionWindow.open(pos,type,size,from)
   let pos = getpos('.')
   let self.pos = { 'bufnum': pos[0] , 'lnum': pos[1] , 'col': pos[2] }
 
-  " echo 'base:' . self.comp_base
-  " echo self.comp_start
+  " XXX: make sure we have completion items
+
+  " before we create the search window , we should check autocomplpop by our
+  " guard.
+  call g:AutoComplPopGuard.check()
   call self.split(a:pos,a:type,a:size)
 endf
 
@@ -110,6 +114,8 @@ fun! g:PLCompletionWindow.close()
   call garbagecollect()
   redraw
 endf
+
+
 
 " XXX: 
 "   should save completion base position

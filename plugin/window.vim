@@ -57,11 +57,13 @@ fun! WindowManager.split(position,type,size)
       call self.init_mapping()
     catch /^SKIP:/
       bw
+      startinsert
+      call cursor( line('.') , col('.') + 1 )
       call libperl#echo( v:exception )
       return
     catch /^ERROR:/
-      echo v:exception
       bw " close buffer
+      echo v:exception
       return
     endtry
 

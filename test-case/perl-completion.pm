@@ -25,14 +25,12 @@ sub translate_ticket_state {
     # Ctrl-x Ctrl-x
     $self->
     $self->
-    $self->
+    $self->ticket_id
     $class->translate_ticket_state()
     $ticket->
     Params::Validate->
-    Jifty->handler
-    Jifty::DBI::Record->
-
-
+    Jifty->handler->
+    Jifty::DBI::Record->_init()
 
     # Ctrl-x Ctrl-m
     App::SD::U
