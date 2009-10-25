@@ -2,11 +2,11 @@ cpan.vim
 ========
 Vim plugin for perl hackers
 
-Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
-Site: http://oulixe.us/
-Date: Sun Sep 19 10:47:15 2009
-Repository:  http://github.com/c9s/cpan-list.vim
-Screencast:  http://www.youtube.com/watch?v=erF0NWUIbr4  <cpan.vim>
+Author:      Cornelius ( 林佑安 ) <cornelius.howl@DELETE-ME.gmail.com>
+Site:        http://oulixe.us/
+Date:        Sun Sep 19 10:47:15 2009
+Repository:  http://github.com/c9s/cpan.vim
+Screencast:  [cpan.vim](http://www.youtube.com/watch?v=erF0NWUIbr4)
 
 Keywords: perl , cpan , vim
 
@@ -17,16 +17,6 @@ FEATURES
    * cpan module completion
    * browser integration
 
-SCREENCAST
-==========
-<object width="560" height="340">
-<param name="movie" value="http://www.youtube.com/v/erF0NWUIbr4&hl=zh_TW&fs=1&"></param>
-<param name="allowFullScreen" value="true"></param>
-<param name="allowscriptaccess" value="always"></param>
-<embed src="http://www.youtube.com/v/erF0NWUIbr4&hl=zh_TW&fs=1&"
-    type="application/x-shockwave-flash" allowscriptaccess="always"
-    allowfullscreen="true" width="560" height="340"></embed>
-</object>
 
 INSTALL
 =========
