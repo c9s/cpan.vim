@@ -29,7 +29,8 @@ please checkout it from github.
 back to cpan.vim directory:
 
     $ vim-packager build   # this initialize makefile from meta file (VIMMETA)
-    $ make install         # this will install dependencies
+    $ make                 # this will install dependencies
+    $ make install         # do install
 
 USAGE
 =========

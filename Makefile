@@ -45,6 +45,7 @@ install :
 install-deps : 
 		$(NOECHO) $(FULLPERL)  -Ilib -MVIM::Packager::Installer=install_deps_remote  -e 'install_deps_remote()' libperl.vim \
 	autoload/libperl.vim \
-	http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim \
+	http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim 
+		$(NOECHO) $(FULLPERL)  -Ilib -MVIM::Packager::Installer=install_deps_remote  -e 'install_deps_remote()' search-window.vim \
 	plugin/window.vim \
-	http://github.com/c9s/search-window.vim/blob/master/vimlib/plugin/window.vim 
+	http://github.com/c9s/search-window.vim/raw/master/vimlib/plugin/window.vim 
