@@ -290,6 +290,13 @@ fun! g:PLCompletionWindow.init_mapping()
   inoremap <silent> <buffer> <C-k> <ESC>:call search('^[a-zA-Z]','b')<CR>
 endf
 
+
+
+
+
+
+
+
 let g:plc_window_height = 14
 let g:plc_window_position = 'botright'
 

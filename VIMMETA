@@ -21,7 +21,10 @@
 
 =script
 
-# not implmeneted yet
+    utils/find_base_classes.pl
+    utils/perl_function_list.pl
+    utils/parse_moose_accessor.pl 
+    utils/moose-type-constraints
 
 =repository http://github.com/c9s/cpan.vim
 

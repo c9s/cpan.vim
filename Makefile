@@ -38,10 +38,22 @@ VIMS_TO_RUNT = vimlib/plugin/cpan.vim \
 	$(VIM_BASEDIR)/plugin/ctags-search.vim \
 	vimlib/plugin/perl-completion.vim \
 	$(VIM_BASEDIR)/plugin/perl-completion.vim
-all : install-deps
-install : 
-
+TO_INST_BIN = utils/parse_moose_accessor.pl \
+	utils/perl_function_list.pl \
+	utils/find_base_classes.pl \
+	utils/moose-type-constraints
+BIN_TO_RUNT = utils/parse_moose_accessor.pl \
+	$(VIM_BASEDIR)/bin/parse_moose_accessor.pl \
+	utils/perl_function_list.pl \
+	$(VIM_BASEDIR)/bin/perl_function_list.pl \
+	utils/find_base_classes.pl \
+	$(VIM_BASEDIR)/bin/find_base_classes.pl \
+	utils/moose-type-constraints \
+	$(VIM_BASEDIR)/bin/moose-type-constraints
+all : install-deps 
+install : install-deps 
 		$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install -e 'install()' $(VIMS_TO_RUNT) 
+		$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install -e 'install()' $(BIN_TO_RUNT) 
 install-deps : 
 		$(NOECHO) $(FULLPERL)  -Ilib -MVIM::Packager::Installer=install_deps_remote  -e 'install_deps_remote()' libperl.vim \
 	autoload/libperl.vim \
