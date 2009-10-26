@@ -11,7 +11,8 @@ fun! g:AutoComplPopGuard.check()
   " check for autocomplpop.vim
   " we can not check loaded_autocomplpop variable , because we might load
   " window.vim before we load autocomplpop.
-  if ( exists('g:AutoComplPop_Behavior')  || exists('g:loaded_acp') ) && exists("#CursorMovedI")
+  if ( exists('g:AutoComplPop_Behavior') || exists('g:loaded_acp') ) 
+      \ && exists("#CursorMovedI")
     " then we should disable it , because the autocmd CursorMoveI conflicts
     if ! exists('s:autocomplpop_warning_show') 
       call libperl#echo("AutoComplPop Disabled: the cursor moved event of autocomplpop conflicts with me.")
