@@ -1,0 +1,25 @@
+
+=name           cpan.vim
+
+=author         Cornelius
+
+=version_from   vimlib/plugin/cpan.vim
+
+=vim_version    >= 7.0
+
+=type           plugin
+
+=dependency
+
+#    [name] >= [version]
+
+    libperl.vim
+        | autoload/libperl.vim | http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim
+        | plugin/window.vim    | http://github.com/c9s/search-window.vim/blob/master/vimlib/plugin/window.vim
+
+=script
+
+# not implmeneted yet
+
+=repository http://github.com/c9s/cpan.vim
+
