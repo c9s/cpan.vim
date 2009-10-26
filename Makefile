@@ -27,14 +27,11 @@ VIM_MACROS_DIR = /Users/c9s/.vim/macros
 VIM_PLUGIN_DIR = /Users/c9s/.vim/plugin
 VIM_SYNTAX_DIR = /Users/c9s/.vim/syntax
 TO_INST_VIMS = vimlib/plugin/cpan.vim \
-	vimlib/plugin/window.vim \
 	vimlib/plugin/p5-function-search.vim \
 	vimlib/plugin/ctags-search.vim \
 	vimlib/plugin/perl-completion.vim
 VIMS_TO_RUNT = vimlib/plugin/cpan.vim \
 	$(VIM_BASEDIR)/plugin/cpan.vim \
-	vimlib/plugin/window.vim \
-	$(VIM_BASEDIR)/plugin/window.vim \
 	vimlib/plugin/p5-function-search.vim \
 	$(VIM_BASEDIR)/plugin/p5-function-search.vim \
 	vimlib/plugin/ctags-search.vim \
@@ -46,6 +43,8 @@ install :
 
 		$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install -e 'install()' $(VIMS_TO_RUNT) 
 install-deps : 
-		$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install_deps_remote  -e 'install_deps_remote()' libperl.vim \
+		$(NOECHO) $(FULLPERL)  -Ilib -MVIM::Packager::Installer=install_deps_remote  -e 'install_deps_remote()' libperl.vim \
 	autoload/libperl.vim \
-	http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim 
+	http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim \
+	plugin/window.vim \
+	http://github.com/c9s/search-window.vim/blob/master/vimlib/plugin/window.vim 
