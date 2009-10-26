@@ -18,8 +18,18 @@ FEATURES
 
 INSTALL
 =========
+To install cpan.vim , you need to install VIM::Packager, it's not released to cpan yet. so 
+please checkout it from github.
 
-    $ make install 
+    $ git clone git://github.com/c9s/vim-packager.git
+    $ cd vim-packager
+    $ perl Makefile.PL
+    $ sudo make install
+
+back to cpan.vim directory:
+
+    $ vim-packager build   # this initialize makefile from meta file (VIMMETA)
+    $ make install         # this will install dependencies
 
 USAGE
 =========
