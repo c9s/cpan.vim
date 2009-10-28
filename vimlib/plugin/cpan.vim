@@ -140,8 +140,6 @@ endif
 
 " we need window manager class
 
-runtime plugin/window.vim
-
 " version check {{{
 if exists('g:loaded_cpan') || v:version < 701
   "finish
@@ -208,7 +206,7 @@ endf
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
-let s:CPANWindow = copy(WindowManager)
+let s:CPANWindow = copy( swindow#class  )
 
 fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow

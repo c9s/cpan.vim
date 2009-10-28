@@ -1,12 +1,11 @@
 
-runtime plugin/window.vim
 
 " &&&& Perl Function Search window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 "
 " Feature
 "   built-in function name search
 "
-let s:FunctionWindow = copy(WindowManager)
+let s:FunctionWindow = copy(swindow#class)
 let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
 

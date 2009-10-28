@@ -10,9 +10,8 @@
 "
 "   Enter to goto tag
 "   t to open the tag in new tabpage
-runtime! plugin/window.vim
 
-let s:CtagsWindow = copy( WindowManager )
+let s:CtagsWindow = copy( swindow#class )
 let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write 
 let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
