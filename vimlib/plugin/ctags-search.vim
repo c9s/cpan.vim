@@ -96,7 +96,7 @@ endf
 
 fun! s:CtagsWindow.update_search()
   let pattern = getline('.')
-  let matches = filter( copy( self.resource )  , 'v:val =~ ''^' . pattern . '''' )
+  let matches = filter( copy( self.resource )  , 'v:val =~ ''' . pattern . '''' )
   if len(matches) > 100 
     call remove( matches , 0 , 100 )
   endif

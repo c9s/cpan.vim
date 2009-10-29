@@ -50,5 +50,7 @@ fun! s:FunctionWindow.switch_mode()
   if self.mode == 1 | let self.mode = 0 | else | let self.mode = self.mode + 1 | endif
 endf
 
-
+com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
+com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
+nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"}}}

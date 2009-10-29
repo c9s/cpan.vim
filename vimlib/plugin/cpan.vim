@@ -471,9 +471,6 @@ endf
 "}}}
 "
 "
-com! SwitchFunctionWindowMode  :call s:FunctionWindow.switch_mode()
-com! OpenFunctionWindow        :call s:FunctionWindow.open('topleft', 'split',10)
-nnoremap <C-c><C-f>        :OpenFunctionWindow<CR>
 
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
