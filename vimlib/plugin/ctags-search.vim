@@ -15,9 +15,10 @@ let s:CtagsWindow = copy( swindow#class )
 let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write 
 let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
+let s:CtagsWindow.max_item = 100
 
 fun! s:echo(msg)
-  echo a:msg
+  echomsg a:msg
   redraw
 endf
 
@@ -56,14 +57,12 @@ fun! s:CtagsWindow.init_buffer()
 
   let matches = copy( self.resource )
 
-  if len( matches ) > 100 
-    let matches = remove( matches ,0,100) 
+  if len( matches ) > self.max_item 
+    let matches = remove( matches ,0, self.max_item) 
   endif
 
   cal self.render_result( matches )  " just take out first 100 items
-
   cal s:echo( "Ready" )
-
   autocmd CursorMovedI <buffer> call s:CtagsWindow.update_search()
 
   silent file CtagsSearch
