@@ -162,7 +162,7 @@ let g:cpan_install_command = ''
 let g:cpan_browser_command = ''
 let g:cpan_win_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
-let g:cpan_win_width = 30
+let g:cpan_win_width = 20
 let g:cpan_win_height = 10
 let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
 let g:cpan_source_cache     = expand('~/.vim-cpan-source')
@@ -397,7 +397,7 @@ endf
 
 fun! ClosePerldocWindow()
   " resize back
-  if g:cpan_win_type == 'v'
+  if g:cpan_win_type == 'vsplit'
     exec 'vertical resize ' . g:cpan_win_width
   else
     exec 'resize ' . g:cpan_win_height
