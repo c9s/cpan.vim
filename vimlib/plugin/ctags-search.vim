@@ -23,6 +23,7 @@ fun! s:echo(msg)
 endf
 
 fun! s:CtagsWindow.init_mapping()
+  " XXX: should remove dependency from libperl
   nnoremap <silent> <buffer> t       :call libperl#tab_open_tag(getline('.'))<CR>
   nnoremap <silent> <buffer> <Enter> :call libperl#open_tag(getline('.'))<CR>
   nnoremap <silent> <buffer> <C-R>   :GenCtags<CR>
