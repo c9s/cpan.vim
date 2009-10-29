@@ -17,8 +17,8 @@ let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write
 let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
 
 fun! s:CtagsWindow.init_mapping()
-  nnoremap <silent> <buffer> t       :call libperl#GotoTagNewTab(getline('.'))<CR>
-  nnoremap <silent> <buffer> <Enter> :call libperl#GotoTag(getline('.'))<CR>
+  nnoremap <silent> <buffer> t       :call libperl#tab_open_tag(getline('.'))<CR>
+  nnoremap <silent> <buffer> <Enter> :call libperl#open_tag(getline('.'))<CR>
   nnoremap <silent> <buffer> <C-R>   :GenCtags<CR>
 endf
 

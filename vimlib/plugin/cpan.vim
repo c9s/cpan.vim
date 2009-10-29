@@ -138,6 +138,14 @@ if ! exists('g:libperl#lib_version') || g:libperl#lib_version < 0.3
   finish
 endif
 
+
+fun! s:echo(msg)
+  redraw
+  echo a:msg
+endf
+
+
+
 " we need window manager class
 
 " version check {{{
@@ -302,21 +310,23 @@ fun! s:CPANWindow.update_search()
   startinsert
 endfunc
 
+
+
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
-    cal libperl#echo( "preparing cpan module list...")
+    cal s:echo( "preparing cpan module list...")
     let g:cpan_pkgs = libperl#get_cpan_module_list(0)
   endif
 endf
 fu! PrepareInstalledCPANModuleCache()
   if len( g:cpan_installed_pkgs ) == 0 
-    cal libperl#echo("preparing installed cpan module list...")
+    cal s:echo("preparing installed cpan module list...")
     let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(0)
   endif
 endf
 fu! PrepareCurrentLibCPANModuleCache()
   if len( g:cpan_curlib_pkgs ) == 0 
-    cal libperl#echo("preparing currentlib cpan module list...")
+    cal s:echo("preparing currentlib cpan module list...")
     let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(0)
   endif
 endf
@@ -325,13 +335,13 @@ endf
 fu! libperl#get_installed_cpan_module_list(force)
   if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
+    call s:echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
           \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . g:cpan_installed_cache )
     " sed  's/^package //' | sed 's/;$//'
-    call libperl#echo("ready")
+    call s:echo("ready")
   endif
   return readfile( g:cpan_installed_cache )
 endf
@@ -340,12 +350,12 @@ endf
 fu! libperl#get_currentlib_cpan_module_list(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
-    call libperl#echo( "finding packages... from lib/" )
+    call s:echo( "finding packages... from lib/" )
     call system( 'find lib -type f -iname "*.pm" ' 
           \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . cpan_curlib_cache )
-    call libperl#echo('cached')
+    call s:echo('cached')
   endif
   return readfile( cpan_curlib_cache )
 endf
@@ -432,7 +442,7 @@ fu! CompleteInstalledCPANModuleList()
   cal PrepareInstalledCPANModuleCache()
   let start_pos  = libperl#get_pkg_comp_start()
   let base = libperl#get_pkg_comp_base()
-  call libperl#echo( "filtering..." )
+  call s:echo( "filtering..." )
   " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
   let res = []
   for p in g:cpan_installed_pkgs 
@@ -446,13 +456,13 @@ endf
 
 fu! CompleteCPANModuleList()
   if len( g:cpan_pkgs ) == 0 
-    call libperl#echo("preparing cpan module list...")
+    call s:echo("preparing cpan module list...")
     let g:cpan_pkgs = libperl#get_cpan_module_list(0)
-    call libperl#echo("done")
+    call s:echo("done")
   endif
   let start_pos  = libperl#get_pkg_comp_start()
   let base = libperl#get_pkg_comp_base()
-  call libperl#echo("filtering")
+  call s:echo("filtering")
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
   call complete( start_pos[1]+1 , res )
   return ''
