@@ -16,6 +16,11 @@ let s:CtagsWindow.resource = [ ]
 let s:CtagsWindow.default_ctags = 'tags'  " default ctags filename to write 
 let s:CtagsWindow.tagfiles = [ "tags" ]   " for searching tags file in different names
 
+fun! s:echo(msg)
+  echo a:msg
+  redraw
+endf
+
 fun! s:CtagsWindow.init_mapping()
   nnoremap <silent> <buffer> t       :call libperl#tab_open_tag(getline('.'))<CR>
   nnoremap <silent> <buffer> <Enter> :call libperl#open_tag(getline('.'))<CR>
@@ -45,12 +50,19 @@ fun! s:CtagsWindow.init_buffer()
     throw "ERROR: not ctags file specified"
   endif
 
-  cal libperl#echo( "Loading TagList..." )
+  cal s:echo( "Loading TagList..." )
   let self.resource = self.read_tags(file)   " XXX let it be configurable
-  cal libperl#echo( "Rendering..." )
-  cal self.render_result( remove(copy(self.resource),0,100) )  " just take out first 100 items
+  cal s:echo( "Rendering..." )
 
-  cal libperl#echo( "Ready" )
+  let matches = copy( self.resource )
+
+  if len( matches ) > 100 
+    let matches = remove( matches ,0,100) 
+  endif
+
+  cal self.render_result( matches )  " just take out first 100 items
+
+  cal s:echo( "Ready" )
 
   autocmd CursorMovedI <buffer> call s:CtagsWindow.update_search()
 
@@ -59,9 +71,9 @@ endf
 
 fun! s:CtagsWindow.generate_ctags_file(path)
   let f = self.default_ctags
-  cal libperl#echo("Generating...")
+  cal s:echo("Generating...")
   call system("ctags -f " . f . " -R " . a:path)
-  cal libperl#echo("Done")
+  cal s:echo("Done")
   return f
 endf
 
@@ -90,8 +102,12 @@ fun! s:CtagsWindow.update_search()
   endif
 
   let old = getpos('.')
-  silent 2,$delete _
-  cal self.render_result( matches )
+
+  if len(matches) > 0 
+    silent 2,$delete _
+    cal self.render_result( matches )
+  endif
+
   cal setpos('.',old)
   startinsert
 endf
