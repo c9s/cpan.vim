@@ -9,6 +9,12 @@ let s:FunctionWindow = copy(swindow#class)
 let s:FunctionWindow.Modes = { 'BUILTIN':0 , 'PERLINTERNAL':1 }
 let s:FunctionWindow.resource = [ ]
 
+
+fun! s:echo(msg)
+  echomsg a:msg 
+  redraw
+endf
+
 fun! s:FunctionWindow.init_mapping()
   nnoremap <silent> <buffer> <Enter> :cal OpenPerldocWindow( substitute( getline('.') , '^\(\w\+\).*$' , '\1' , '' ) ,'-f')<CR>
 endf
@@ -22,9 +28,9 @@ endf
 
 fun! s:FunctionWindow.init_buffer()
   setfiletype perlfunctionwindow
-  call libperl#echo( "Loading Function List...")
+  call s:echo( "Loading Function List...")
   let self.resource = readfile( expand('~/.vim/perl/perl-functions') )
-  call libperl#echo( "Ready" )
+  call s:echo( "Ready" )
   cal self.render_result( self.resource )
   autocmd CursorMovedI <buffer> call s:FunctionWindow.update_search()
   silent file Perl\ Builtin\ Functions
