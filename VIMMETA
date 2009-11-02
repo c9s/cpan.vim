@@ -11,13 +11,14 @@
 
 =dependency
 
-#    [name] >= [version]
-
     libperl.vim
         | autoload/libperl.vim    | http://github.com/c9s/libperl.vim/raw/master/autoload/libperl.vim
 
     search-window.vim
         | autoload/swindow.vim    | http://github.com/c9s/search-window.vim/raw/master/vimlib/autoload/swindow.vim
+
+    perldoc.vim 
+        | autoload/perldoc.vim    | http://github.com/c9s/perldoc.vim/raw/master/vimlib/autoload/perldoc.vim
 
 =script
 

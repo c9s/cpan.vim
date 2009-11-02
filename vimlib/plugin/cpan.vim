@@ -206,8 +206,6 @@ endf
 
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
-
-
 let s:CPANWindow = copy( swindow#class )
 let s:CPANWindow.search_mode = g:CPAN.Mode.Installed
 
@@ -246,12 +244,9 @@ fun! s:CPANWindow.init_mapping()
   inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
   nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-  nnoremap <silent> <buffer> $   :call OpenPerldocWindow(expand('<cWORD>'),'')<CR>
-
-  " rewrite as command
+  " XXX: rewrite as command
+  nnoremap <silent> <buffer> $   :call perldoc#window.open(expand('<cWORD>'),'')<CR>
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
-
-  " rewrite as command
   nnoremap <silent> <buffer> f   :exec '!sudo cpanf ' . expand('<cWORD>')<CR>
 
   nnoremap <silent> <buffer> <Enter> :call libperl#open_module()<CR>
@@ -281,16 +276,6 @@ fun! s:CPANWindow.buffer_name()
     silent file CPAN\ (CurrentLib)
   endif
 endf
-
-fun! s:CPANWindow.init_syntax()
-  hi link cpansearch Search
-endf
-
-fun! s:CPANWindow.update()
-  cal self.update_search()
-  cal self.update_highlight()
-  startinsert
-endfunc
 
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
@@ -339,54 +324,8 @@ fu! libperl#get_currentlib_cpan_module_list(force)
   endif
   return readfile( cpan_curlib_cache )
 endf
-
-
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
-" &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
-" XXX: migrate this
-
-fun! OpenPerldocWindow(name,param)
-  vnew
-  setlocal modifiable
-  setlocal noswapfile
-  setlocal buftype=nofile
-  setlocal bufhidden=hide
-  setlocal nobuflisted
-  setlocal nowrap
-  setlocal cursorline
-  setlocal nonumber
-  setlocal fdc=0
-  setfiletype perldoc
-  silent file Perldoc
-  exec 'r !perldoc -tT ' . a:param . ' ' . a:name
-
-  syn match HEADER +^\w.*$+
-  syn match STRING +".\{-}"+
-  syn match STRING2 +'.\{-}'+
-  hi link HEADER Identifier
-  hi link STRING Comment
-  hi link STRING2 Comment
-
-  setlocal nomodifiable
-  call cursor(1,1)
-  resize 50
-  vertical resize 82
-  autocmd BufWinLeave <buffer> call ClosePerldocWindow()
-  nmap <buffer> <ESC> <C-W>q
-endf
-
-fun! ClosePerldocWindow()
-  " resize back
-  if g:cpan_win_type == 'vsplit'
-    exec 'vertical resize ' . g:cpan_win_width
-  else
-    exec 'resize ' . g:cpan_win_height
-  endif
-  bw
-  redraw
-endf
-"}}}
 
 
 
