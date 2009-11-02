@@ -156,7 +156,6 @@ let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
 let g:cpan_install_command = ''
 let g:cpan_browser_command = ''
-let self.search_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
 let g:cpan_win_width = 20
 let g:cpan_win_height = 10
@@ -208,17 +207,32 @@ endf
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
+
 let s:CPANWindow = copy( swindow#class )
-let s:CPANWindow.predefined_result = g:cpan_installed_pkgs
+let s:CPANWindow.search_mode = g:CPAN.Mode.Installed
 
 fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
   autocmd CursorMovedI <buffer>       call s:CPANWindow.update()
   autocmd BufWinLeave  <buffer>       call s:CPANWindow.close()
   cal self.buffer_name()
-  cal PrepareInstalledCPANModuleCache()
 endf
 
+fun! s:CPANWindow.index()
+  if self.search_mode == g:CPAN.Mode.Installed
+    cal PrepareInstalledCPANModuleCache()
+    return g:cpan_installed_pkgs
+  elseif self.search_mode == g:CPAN.Mode.All
+    cal PrepareCPANModuleCache()
+    return g:cpan_pkgs
+  elseif self.search_mode == g:CPAN.Mode.CurrentLib
+    cal PrepareCurrentLibCPANModuleCache()
+    return g:cpan_curlib_pkgs
+  else
+    cal PrepareInstalledCPANModuleCache()
+    return g:cpan_installed_pkgs
+  endif
+endf
 
 fun! s:CPANWindow.buffer_reload_init()
   call self.buffer_name()
@@ -254,16 +268,7 @@ fun! s:CPANWindow.switch_mode()
   call self.buffer_name()
 
   " update predefined result
-  if self.search_mode == g:CPAN.Mode.Installed
-    cal PrepareInstalledCPANModuleCache()
-    let self.predefined_result = g:cpan_installed_pkgs
-  elseif self.search_mode == g:CPAN.Mode.All
-    cal PrepareCPANModuleCache()
-    let self.predefined_result = g:cpan_pkgs
-  elseif self.search_mode == g:CPAN.Mode.CurrentLib
-    cal PrepareCurrentLibCPANModuleCache()
-    let self.predefined_result = g:cpan_curlib_pkgs
-  endif
+  let self.predefined_index = self.index()
 
   call self.update()
   call cursor( 1, col('$') )
@@ -284,8 +289,9 @@ fun! s:CPANWindow.init_syntax()
 endf
 
 fun! s:CPANWindow.update()
-  let pkgs = self.filter_result( self.predefined_result )
-  cal self.render(pkgs)
+  cal self.update_search()
+
+  let pattern = self.get_pattern()
   if strlen( pattern ) > 0
     exec 'syn clear cpansearch'
     exec 'syn match cpansearch +'. pattern . '+'
@@ -294,8 +300,6 @@ fun! s:CPANWindow.update()
   endif
   startinsert
 endfunc
-
-
 
 fu! PrepareCPANModuleCache()
   if len( g:cpan_pkgs ) == 0 
