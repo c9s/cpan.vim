@@ -215,13 +215,13 @@ fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
   autocmd CursorMovedI <buffer>       call s:CPANWindow.update()
   autocmd BufWinLeave  <buffer>       call s:CPANWindow.close()
-  cal self.refresh_buffer_name()
+  cal self.buffer_name()
   cal PrepareInstalledCPANModuleCache()
 endf
 
 
 fun! s:CPANWindow.buffer_reload_init()
-  call self.refresh_buffer_name()
+  call self.buffer_name()
   startinsert
   call cursor( 1 , col('$')  )
 endf
@@ -251,12 +251,12 @@ fun! s:CPANWindow.switch_mode()
   if g:cpan_win_mode == 4
     let g:cpan_win_mode = 1
   endif
-  call self.refresh_buffer_name()
-  " call self.update_search()
+  call self.buffer_name()
+  call self.update()
   call cursor( 1, col('$') )
 endf
 
-fun! s:CPANWindow.refresh_buffer_name()
+fun! s:CPANWindow.buffer_name()
   if g:cpan_win_mode == g:CPAN.Mode.Installed 
     silent file CPAN\ (Installed)
   elseif g:cpan_win_mode == g:CPAN.Mode.All
@@ -268,10 +268,6 @@ endf
 
 fun! s:CPANWindow.init_syntax()
   hi link cpansearch Search
-endf
-
-fun! s:CPANWindow.get_pattern()
-  return getline(1)
 endf
 
 fun! s:CPANWindow.update()
