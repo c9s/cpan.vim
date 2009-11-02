@@ -121,7 +121,7 @@
 "        g:cpan_win_type         : v (vertical) or s (horizontal) cpan window
 "        g:cpan_win_width     
 "        g:cpan_win_height     
-"        g:cpan_win_mode         : default cpan window mode 
+"        self.search_mode         : default cpan window mode 
 "                             (search installed modules or all modules or currentlib ./lib)
 "        g:cpan_installed_cache  : filename of installed package cache
 "        g:cpan_source_cache     : filename of package source cache
@@ -156,7 +156,7 @@ let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
 let g:cpan_install_command = ''
 let g:cpan_browser_command = ''
-let g:cpan_win_mode = g:CPAN.Mode.Installed
+let self.search_mode = g:CPAN.Mode.Installed
 let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
 let g:cpan_win_width = 20
 let g:cpan_win_height = 10
@@ -247,21 +247,34 @@ fun! s:CPANWindow.init_mapping()
 endf
 
 fun! s:CPANWindow.switch_mode()
-  let g:cpan_win_mode = g:cpan_win_mode + 1
-  if g:cpan_win_mode == 4
-    let g:cpan_win_mode = 1
+  let self.search_mode = self.search_mode + 1
+  if self.search_mode == 4
+    let self.search_mode = 1
   endif
   call self.buffer_name()
+
+  " update predefined result
+  if self.search_mode == g:CPAN.Mode.Installed
+    cal PrepareInstalledCPANModuleCache()
+    let self.predefined_result = g:cpan_installed_pkgs
+  elseif self.search_mode == g:CPAN.Mode.All
+    cal PrepareCPANModuleCache()
+    let self.predefined_result = g:cpan_pkgs
+  elseif self.search_mode == g:CPAN.Mode.CurrentLib
+    cal PrepareCurrentLibCPANModuleCache()
+    let self.predefined_result = g:cpan_curlib_pkgs
+  endif
+
   call self.update()
   call cursor( 1, col('$') )
 endf
 
 fun! s:CPANWindow.buffer_name()
-  if g:cpan_win_mode == g:CPAN.Mode.Installed 
+  if self.search_mode == g:CPAN.Mode.Installed 
     silent file CPAN\ (Installed)
-  elseif g:cpan_win_mode == g:CPAN.Mode.All
+  elseif self.search_mode == g:CPAN.Mode.All
     silent file CPAN\ (All)
-  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
+  elseif self.search_mode == g:CPAN.Mode.CurrentLib
     silent file CPAN\ (CurrentLib)
   endif
 endf
@@ -271,33 +284,14 @@ fun! s:CPANWindow.init_syntax()
 endf
 
 fun! s:CPANWindow.update()
-  let pattern = self.get_pattern()
-
-  let pkgs = []
-  if g:cpan_win_mode == g:CPAN.Mode.Installed
-    cal PrepareInstalledCPANModuleCache()
-    let pkgs = self.filter_result( g:cpan_installed_pkgs )
-  elseif g:cpan_win_mode == g:CPAN.Mode.All
-    cal PrepareCPANModuleCache()
-    let pkgs = self.filter_result( g:cpan_pkgs )
-  elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
-    cal PrepareCurrentLibCPANModuleCache()
-    let pkgs = self.filter_result( g:cpan_curlib_pkgs )
-  endif
-
-  if len(pkgs) > g:cpan_max_result 
-    let pkgs = remove( pkgs , 0 , g:cpan_max_result )
-  endif
-
+  let pkgs = self.filter_result( self.predefined_result )
   cal self.render(pkgs)
-
   if strlen( pattern ) > 0
     exec 'syn clear cpansearch'
     exec 'syn match cpansearch +'. pattern . '+'
   else
     exec 'syn clear cpansearch'
   endif
-
   startinsert
 endfunc
 
