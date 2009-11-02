@@ -85,6 +85,7 @@
 "           <ESC><ESC> to close search window
 "           you can also press <C-c> in insert mode to close search window too
 "
+"XXX: has been migrated to other repository.
 "   Ctags Search Window:
 "       press <C-c><C-t> to open ctags search window
 "       press <Enter> to goto tag
@@ -132,21 +133,16 @@
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
 "
-" XXX: require version 0.3
+" XXX: require libperl.vim version 0.3
 if ! exists('g:libperl#lib_version') || g:libperl#lib_version < 0.3
   echoerr 'cpan.vim: please install libperl.vim'
   finish
 endif
 
-
 fun! s:echo(msg)
   redraw
   echo a:msg
 endf
-
-
-
-" we need window manager class
 
 " version check {{{
 if exists('g:loaded_cpan') || v:version < 701
@@ -210,19 +206,18 @@ endf
 "  }}}
 
 
-
-
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
 let s:CPANWindow = copy( swindow#class  )
 
 fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
-  cal PrepareInstalledCPANModuleCache()
-  cal self.render_result( g:cpan_installed_pkgs )
   autocmd CursorMovedI <buffer>       call s:CPANWindow.update_search()
   autocmd BufWinLeave  <buffer>       call s:CPANWindow.close()
   call self.refresh_buffer_name()
+
+  cal PrepareInstalledCPANModuleCache()
+  cal self.render_result( g:cpan_installed_pkgs )
 endf
 
 fun! s:CPANWindow.buffer_reload_init()
@@ -364,7 +359,8 @@ endf
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
 " &&&& Perldoc Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
-"
+" XXX: migrate this
+
 fun! OpenPerldocWindow(name,param)
   vnew
   setlocal modifiable
@@ -477,7 +473,7 @@ com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_wi
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-inoremap <C-x><C-m>        <C-R>=CompleteInstalledCPANModuleList()<CR>
+inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
 nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
 nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
 
