@@ -290,14 +290,7 @@ endf
 
 fun! s:CPANWindow.update()
   cal self.update_search()
-
-  let pattern = self.get_pattern()
-  if strlen( pattern ) > 0
-    exec 'syn clear cpansearch'
-    exec 'syn match cpansearch +'. pattern . '+'
-  else
-    exec 'syn clear cpansearch'
-  endif
+  cal self.update_highlight()
   startinsert
 endfunc
 
