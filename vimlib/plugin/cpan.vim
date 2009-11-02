@@ -229,8 +229,7 @@ fun! s:CPANWindow.index()
     cal PrepareCurrentLibCPANModuleCache()
     return g:cpan_curlib_pkgs
   else
-    cal PrepareInstalledCPANModuleCache()
-    return g:cpan_installed_pkgs
+    return [ ]
   endif
 endf
 
@@ -269,9 +268,8 @@ fun! s:CPANWindow.switch_mode()
 
   " update predefined result
   let self.predefined_index = self.index()
-
-  call self.update()
-  call cursor( 1, col('$') )
+  cal self.update()
+  cal cursor( 1, col('$') )
 endf
 
 fun! s:CPANWindow.buffer_name()
