@@ -208,17 +208,17 @@ endf
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 
-let s:CPANWindow = copy( swindow#class  )
+let s:CPANWindow = copy( swindow#class )
+let s:CPANWindow.predefined_result = g:cpan_installed_pkgs
 
 fun! s:CPANWindow.init_buffer()
   setfiletype cpanwindow
-  autocmd CursorMovedI <buffer>       call s:CPANWindow.update_search()
+  autocmd CursorMovedI <buffer>       call s:CPANWindow.update()
   autocmd BufWinLeave  <buffer>       call s:CPANWindow.close()
-  call self.refresh_buffer_name()
-
+  cal self.refresh_buffer_name()
   cal PrepareInstalledCPANModuleCache()
-  cal self.render_result( g:cpan_installed_pkgs )
 endf
+
 
 fun! s:CPANWindow.buffer_reload_init()
   call self.refresh_buffer_name()
@@ -252,7 +252,7 @@ fun! s:CPANWindow.switch_mode()
     let g:cpan_win_mode = 1
   endif
   call self.refresh_buffer_name()
-  call self.update_search()
+  " call self.update_search()
   call cursor( 1, col('$') )
 endf
 
@@ -270,29 +270,30 @@ fun! s:CPANWindow.init_syntax()
   hi link cpansearch Search
 endf
 
-fun! s:CPANWindow.update_search()
-  let pattern = getline(1)
+fun! s:CPANWindow.get_pattern()
+  return getline(1)
+endf
+
+fun! s:CPANWindow.update()
+  let pattern = self.get_pattern()
 
   let pkgs = []
   if g:cpan_win_mode == g:CPAN.Mode.Installed
     cal PrepareInstalledCPANModuleCache()
-    let pkgs = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    let pkgs = self.filter_result( g:cpan_installed_pkgs )
   elseif g:cpan_win_mode == g:CPAN.Mode.All
     cal PrepareCPANModuleCache()
-    let pkgs = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    let pkgs = self.filter_result( g:cpan_pkgs )
   elseif g:cpan_win_mode == g:CPAN.Mode.CurrentLib
     cal PrepareCurrentLibCPANModuleCache()
-    let pkgs = filter( copy( g:cpan_curlib_pkgs ) , 'v:val =~ "' . pattern . '"' )
+    let pkgs = self.filter_result( g:cpan_curlib_pkgs )
   endif
 
   if len(pkgs) > g:cpan_max_result 
     let pkgs = remove( pkgs , 0 , g:cpan_max_result )
   endif
 
-  let old = getpos('.')
-  silent 2,$delete _
-
-  call self.render_result( pkgs )
+  cal self.render(pkgs)
 
   if strlen( pattern ) > 0
     exec 'syn clear cpansearch'
@@ -301,7 +302,6 @@ fun! s:CPANWindow.update_search()
     exec 'syn clear cpansearch'
   endif
 
-  call setpos('.',old)
   startinsert
 endfunc
 
