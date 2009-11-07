@@ -246,7 +246,12 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
   " XXX: rewrite as command
+  " XXX: better key mapping rule.....
+  nnoremap <silent> <buffer> p   :call  g:perldoc.open_tab(expand('<cWORD>'),'',0)<CR>
+  nnoremap <silent> <buffer> P   :call  g:perldoc.open_tab(expand('<cWORD>'),'',1)<CR>
+
   nnoremap <silent> <buffer> $   :call  g:perldoc.open(expand('<cWORD>'),'')<CR>
+
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> f   :exec '!sudo cpanf ' . expand('<cWORD>')<CR>
 
