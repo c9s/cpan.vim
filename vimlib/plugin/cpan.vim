@@ -335,30 +335,6 @@ endf
 
 
 
-" Function header helper  {{{
-" insert pod template like this:
-" =head2 function 
-"
-"
-"
-" =cut
-" sub test {
-fu! PodHelperFunctionHeader()
-  let subname = substitute( getline('.') , 'sub\s\+\(\w\+\)\s\+.*$' , '\1' , "" )
-  let lines = [ 
-        \ '=head2 ' . subname , 
-        \ '' , 
-        \ '' ,
-        \ '' ,
-        \ '=cut'  ,
-        \ '',
-        \]
-  for text in lines 
-    call append( line('.') - 1 , text )
-  endfor
-  call cursor( line('.') - len( lines ) + 2 , 1  )
-endf
-" }}}
 
 
 
