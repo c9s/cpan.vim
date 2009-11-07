@@ -204,6 +204,7 @@ fu! IsExpired(file,expiry)
 endf
 "  }}}
 
+cal perldoc#load()
 
 " &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
 let s:CPANWindow = copy( swindow#class )
@@ -245,7 +246,7 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
   " XXX: rewrite as command
-  nnoremap <silent> <buffer> $   :call perldoc#window.open(expand('<cWORD>'),'')<CR>
+  nnoremap <silent> <buffer> $   :call  g:perldoc.open(expand('<cWORD>'),'')<CR>
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> f   :exec '!sudo cpanf ' . expand('<cWORD>')<CR>
 
