@@ -385,7 +385,6 @@ nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
 
 nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
 nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>
-nnoremap <C-c><C-p>f       :call PodHelperFunctionHeader()<CR>
 
 com! ReloadModuleCache              :let g:cpan_pkgs = libperl#get_cpan_module_list(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(1)
