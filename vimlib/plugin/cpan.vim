@@ -371,21 +371,17 @@ fu! CompleteCPANModuleList()
 endf
 
 "}}}
-"
-"
-
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
-" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
-inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
-nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
-nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
-
-nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
-nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>
-
 com! ReloadModuleCache              :let g:cpan_pkgs = libperl#get_cpan_module_list(1)
 com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(1)
 com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(1)
+
+" inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
+" inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
+" nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
+" nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
+" nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
+" nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>

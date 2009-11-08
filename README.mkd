@@ -32,6 +32,22 @@ back to cpan.vim directory:
     $ make                 # this will install dependencies
     $ make install         # do install
 
+RECOMMENDED SETTINGS
+====================
+
+cpan.vim doesn't bind window key mapping for you by default. you need to config your 
+settings by yourself.
+
+    nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
+    nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
+    inoremap <C-x><C-m>                 <C-R>=CompleteCPANModuleList()<CR>
+
+or
+
+    inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
+    nnoremap <C-x><C-i>        :call libperl#install_module()<CR>
+    nnoremap <C-c>g            :call libperl#tab_open_module_from_cursor()<CR>
+
 USAGE
 =========
 
@@ -82,7 +98,7 @@ auto insert function pod: press <C-c><C-p>f on function name (normal mode)
 
 Commands:
 
-   - :ReloadModuleCache           
+   - :ReloadModuleCache 
    - :ReloadInstalledModuleCache 
    - :ReloadCurrentLibModuleCache 
 
