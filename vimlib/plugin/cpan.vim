@@ -25,9 +25,9 @@
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 "
-"=VERSION   1.0
 "
 " Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
+" Version:   1.1
 "
 " Site: http://oulixe.us/
 " Date: Sun Sep 19 10:47:15 2009
@@ -54,67 +54,6 @@
 "
 "   $ make install 
 "
-" Usage:
-"   CPAN Window:
-"       1. 
-"           type <C-c><C-m> to open cpan window horizontally
-"           type <C-c><C-v> to open cpan window vertically
-"
-"       2. type pattern to search cpan modules
-"
-"       3. 
-"           - press <enter> to go to the first matched module file.
-"           - press <C-t> to go to the first matched module file in new tab.
-"           - press @ to search module by current pattern in your browser
-"           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
-"           - press <Tab> to switch cpan window mode (search all modules or
-"                 installed modules)
-"
-"       4. <C-n> or <C-p> to select result
-"
-"       5. 
-"           - press <enter> to go to the module file.
-"           - press t to go to the module file in new tab
-"           - press @ to see the module documentation in your browser
-"           - press ! to see the module documentation by perldoc command
-"           - press $ to see the module documentation inside vim window
-"           - press I to install the module
-"           - support bash style bindings , eg: <C-a>, <C-e>, <C-f>, <C-b>
-"
-"       6. 
-"           <ESC><ESC> to close search window
-"           you can also press <C-c> in insert mode to close search window too
-"
-"XXX: has been migrated to other repository.
-"   Ctags Search Window:
-"       press <C-c><C-t> to open ctags search window
-"       press <Enter> to goto tag
-"       press t to goto tag in a new tab
-"
-"   Function Search Window:
-"
-"       press <C-c><C-f> to open function search window
-"       <C-n>,<C-p> to select result 
-"       <Enter> to open perldoc window
-"
-"   ModuleName Completion:
-"       
-"       in insert mode: <Ctrl-x><Ctrl-m> for module name completion (installed
-"       module)
-"
-"   Inspect Module File Content:
-"       in normal mode: <Ctrl-c>g to open the module under the cursor in new
-"       tab
-"
-"   Pod Helper:
-"       auto insert function pod: press <C-c><C-p>f on function name (normal mode)
-"
-" Commands:
-"
-"   ReloadModuleCache           
-"   ReloadInstalledModuleCache 
-"   ReloadCurrentLibModuleCache 
-"
 " Configuration:
 "
 "        g:cpan_browser_command  : command for launching browser
@@ -123,9 +62,7 @@
 "        g:cpan_win_height     
 "        self.search_mode         : default cpan window mode 
 "                             (search installed modules or all modules or currentlib ./lib)
-"        g:cpan_installed_cache  : filename of installed package cache
 "        g:cpan_source_cache     : filename of package source cache
-"        g:cpan_cache_expiry     : cache expirytime in minutes
 "        g:cpan_max_result       : max search result
 "        g:cpan_install_command  : command for installing cpan modules
 "        g:cpan_user_defined_sources : user-defined package source paths
@@ -162,9 +99,6 @@ let g:cpan_win_height = 10
 let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
 let g:cpan_source_cache     = expand('~/.vim-cpan-source')
 let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
-let g:cpan_installed_pkgs = []
-let g:cpan_pkgs = []
-let g:cpan_curlib_pkgs = []
 let g:cpan_max_result = 50
 let g:cpan_user_defined_sources = []
 "}}}
@@ -219,14 +153,11 @@ endf
 
 fun! s:CPANWindow.index()
   if self.search_mode == g:CPAN.Mode.Installed
-    cal PrepareInstalledCPANModuleCache()
-    return g:cpan_installed_pkgs
+    return libperl#get_cpan_installed_module_list(0)
   elseif self.search_mode == g:CPAN.Mode.All
-    cal PrepareCPANModuleCache()
-    return g:cpan_pkgs
+    return libperl#get_cpan_module_list(0)
   elseif self.search_mode == g:CPAN.Mode.CurrentLib
-    cal PrepareCurrentLibCPANModuleCache()
-    return g:cpan_curlib_pkgs
+    return libperl#get_currentlib_cpan_module_list(0)
   else
     return [ ]
   endif
@@ -283,60 +214,9 @@ fun! s:CPANWindow.buffer_name()
   endif
 endf
 
-fu! PrepareCPANModuleCache()
-  if len( g:cpan_pkgs ) == 0 
-    cal s:echo( "preparing cpan module list...")
-    let g:cpan_pkgs = libperl#get_cpan_module_list(0)
-  endif
-endf
-fu! PrepareInstalledCPANModuleCache()
-  if len( g:cpan_installed_pkgs ) == 0 
-    cal s:echo("preparing installed cpan module list...")
-    let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(0)
-  endif
-endf
-fu! PrepareCurrentLibCPANModuleCache()
-  if len( g:cpan_curlib_pkgs ) == 0 
-    cal s:echo("preparing currentlib cpan module list...")
-    let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(0)
-  endif
-endf
 
-" Return: installed cpan module list [list]
-fu! libperl#get_installed_cpan_module_list(force)
-  if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
-    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    call s:echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
-    call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
-          \ . " | perl -pe 's/^package (.*?);/\$1/' "
-          \ . " | sort | uniq > " . g:cpan_installed_cache )
-    " sed  's/^package //' | sed 's/;$//'
-    call s:echo("ready")
-  endif
-  return readfile( g:cpan_installed_cache )
-endf
 
-" Return: current lib/ cpan module list [list]
-fu! libperl#get_currentlib_cpan_module_list(force)
-  let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
-  if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
-    call s:echo( "finding packages... from lib/" )
-    call system( 'find lib -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-          \ . " | perl -pe 's/^package (.*?);/\$1/' "
-          \ . " | sort | uniq > " . cpan_curlib_cache )
-    call s:echo('cached')
-  endif
-  return readfile( cpan_curlib_cache )
-endf
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
-
-
-
-
-
-
 
 " Completions &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
@@ -358,15 +238,15 @@ endf
 
 fu! CompleteCPANModuleList()
   if len( g:cpan_pkgs ) == 0 
-    call s:echo("preparing cpan module list...")
+    cal s:echo("preparing cpan module list...")
     let g:cpan_pkgs = libperl#get_cpan_module_list(0)
-    call s:echo("done")
+    cal s:echo("done")
   endif
   let start_pos  = libperl#get_pkg_comp_start()
   let base = libperl#get_pkg_comp_base()
-  call s:echo("filtering")
+  cal s:echo("filtering")
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
-  call complete( start_pos[1]+1 , res )
+  cal complete( start_pos[1]+1 , res )
   return ''
 endf
 
@@ -375,9 +255,9 @@ com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
-com! ReloadModuleCache              :let g:cpan_pkgs = libperl#get_cpan_module_list(1)
-com! ReloadInstalledModuleCache     :let g:cpan_installed_pkgs = libperl#get_installed_cpan_module_list(1)
-com! ReloadCurrentLibModuleCache    :let g:cpan_curlib_pkgs = libperl#get_currentlib_cpan_module_list(1)
+com! ReloadModuleCache              :cal libperl#get_cpan_module_list(1)
+com! ReloadInstalledModuleCache     :cal libperl#get_cpan_installed_module_list(1)
+com! ReloadCurrentLibModuleCache    :cal libperl#get_currentlib_cpan_module_list(1)
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 " inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
