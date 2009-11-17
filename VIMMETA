@@ -9,6 +9,8 @@
 
 =type           plugin
 
+=script_id      2786
+
 =dependency
 
     libperl.vim
