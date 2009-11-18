@@ -27,7 +27,7 @@
 "
 "
 " Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
-" Version: 1.4
+" Version: 2.2
 "
 " Site: http://oulixe.us/
 " Date: Sun Sep 19 10:47:15 2009
@@ -69,7 +69,6 @@ fun! s:echo(msg)
   echo a:msg
 endf
 
-" Version: 1.4
 if exists('g:loaded_cpan') || v:version < 701
   "finish
 endif
