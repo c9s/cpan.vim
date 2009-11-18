@@ -27,12 +27,10 @@
 "
 "
 " Author: Cornelius <cornelius.howl@DELETE-ME.gmail.com>
-" Version:   1.2
+" Version:   1.3
 "
 " Site: http://oulixe.us/
 " Date: Sun Sep 19 10:47:15 2009
-"
-" Repository:  http://github.com/c9s/cpan-list.vim
 "
 " Screencast:  http://www.youtube.com/watch?v=erF0NWUIbr4  <cpan.vim>
 "
@@ -43,16 +41,6 @@
 "   * easily open module file or in new tab
 "   * cpan module completion
 "   * browser integration
-"
-" Requirement:
-"
-"   libperl.vim
-"
-"       http://github.com/c9s/libperl.vim/
-"       
-" Install:
-"
-"   $ make install 
 "
 " Configuration:
 "
