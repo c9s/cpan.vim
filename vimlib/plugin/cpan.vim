@@ -50,17 +50,13 @@
 "        g:cpan_win_height     
 "        self.search_mode         : default cpan window mode 
 "                             (search installed modules or all modules or currentlib ./lib)
-"        g:cpan_source_cache     : filename of package source cache
-"        g:cpan_max_result       : max search result
 "        g:cpan_install_command  : command for installing cpan modules
-"        g:cpan_user_defined_sources : user-defined package source paths
 "
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 " }}}
 "
-" XXX: require libperl.vim version 0.3
-if ! exists('g:libperl#lib_version') || g:libperl#lib_version < 0.3
-  echoerr 'cpan.vim: please install libperl.vim'
+if ! exists('g:libperl#lib_version') || g:libperl#lib_version < 0.6
+  echoerr 'cpan.vim: please install libperl.vim 0.6'
   finish
 endif
 
@@ -83,11 +79,6 @@ let g:cpan_browser_command = ''
 let g:cpan_win_type = 'vsplit'   " v (vertical) or s (split)
 let g:cpan_win_width = 20
 let g:cpan_win_height = 10
-let g:cpan_installed_cache  = expand('~/.vim-cpan-installed-modules')
-let g:cpan_source_cache     = expand('~/.vim-cpan-source')
-let g:cpan_cache_expiry     = 60 * 24 * 7   " 7 days
-let g:cpan_max_result = 50
-let g:cpan_user_defined_sources = []
 "}}}
 
 " default init {{{
