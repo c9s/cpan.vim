@@ -345,7 +345,6 @@ fun! s:CPANWindow.init_mapping()
   nmap <buffer> <C-r> :ReloadInstalledModuleCache<CR>
 
   nmap <script><silent><buffer> ?    :cal <SID>ShowHelp()<CR>
-
 endf
 
 fun! s:CPANWindow.switch_mode()
