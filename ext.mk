@@ -1,6 +1,8 @@
 
 
 
+INSTALL_CPANM_TO=~/bin/cpanm
+
 install-cpanm-git:
 	git clone git://github.com/miyagawa/cpanminus.git
 	cd cpanminus.git
@@ -8,6 +10,7 @@ install-cpanm-git:
 
 install-cpanm:
 	mkdir ~/bin/
-	if [[ -n `which wget` ]] ; then wget http://xrl.us/cpanm -O ~/bin/cpanm ; \
-	else curl http://xrl.us/cpanm -o ~/bin/cpanm ; fi
-	chmod +x ~/bin/cpanm
+	if [[ -n `which wget` ]] ; then wget http://xrl.us/cpanm -O $(INSTALL_CPANM_TO) ; \
+	elif [[ -n `which curl` ]] ; then curl http://xrl.us/cpanm -o $(INSTALL_CPANM_TO) ; \
+	fi
+	chmod +x ($INSTALL_CPANM_TO)
