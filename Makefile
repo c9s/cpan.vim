@@ -130,7 +130,7 @@ DIRS=`ls -1F | grep / | sed -e 's/\///'`
 VIMRUNTIME=~/.vim
 
 # Other Files to be added:
-FILES=`ls -1 | grep '.vim$$'` Makefile *.mk
+FILES=`ls -1 | grep '.vim$$'` Makefile *.mk README*
 
 # ======== USER CONFIG ======= {{{
 #   please write config in config.mk
@@ -194,7 +194,7 @@ bundle: bundle-deps
 
 dist: bundle mkfilelist
 	@$(TAR) $(NAME)-$(VERSION).tar.gz --exclude '*.svn' --exclude '.git' $(DIRS) $(README_FILES) $(FILES)
-	@echo "$(NAME).tar.gz is ready."
+	@echo "$(NAME)-$(VERSION).tar.gz is ready."
 
 init-runtime:
 	@mkdir -vp $(VIMRUNTIME)
