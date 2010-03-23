@@ -40,9 +40,9 @@ fun! s:get_perllib_path()
   endif
 endf
 
-fun! s:defopt(name,value)
-  if !exists( '{a:name}' )
-    let a:name = a:value
+fun! s:defopt(opt,value)
+  if !exists( '{a:opt}' )
+    let {a:opt} = a:value
   endif
 endf
 
