@@ -68,11 +68,11 @@ Commands
 Options
 ==============
 
-- *g:cpan_win_type*
-- *g:cpan_win_width*
-- *g:cpan_win_height*
-- *g:cpan_mod_cachef*
-- *g:cpan_ins_mod_cachef*
-- *g:cpan_cache_expiry*
-- *g:cpan_default_mapping*
+- *g:cpan_win_type*         : (vsplit|split)
+- *g:cpan_win_width*        : (int)
+- *g:cpan_win_height*       : (int)
+- *g:cpan_mod_cachef*       : (filepath)
+- *g:cpan_ins_mod_cachef*   : (filepath)
+- *g:cpan_cache_expiry*     : (int)(days)
+- *g:cpan_default_mapping*  : (bool)
 
