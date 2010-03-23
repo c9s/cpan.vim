@@ -258,6 +258,20 @@ endf
 
 " }}}
 
+" Help Function
+fun! s:ShowHelp()
+  redraw
+  echo ":: CPAN Helper Plugin ::"
+  echo "   @       - Query this module on search.cpan.org in browser"
+  echo "   p       - Open perldoc in tab"
+  echo "   P       - Open perldoc in tab (Background)"
+  echo "   I       - Install this module"
+  echo "   f       - Install this module by cpanf (CPAN Fresh)"
+  echo "   t       - Open this module source file in new tab"
+  echo "   <ENTER> - Open this module source file in split window"
+endf
+
+
 if exists('g:loaded_cpan') || v:version < 701
   "finish
 endif
@@ -346,11 +360,8 @@ fun! s:CPANWindow.init_mapping()
   inoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/search?query=' . getline('.') . '&mode=all'<CR>
   nnoremap <silent> <buffer> @   <ESC>:exec '!' .g:cpan_browser_command . ' http://search.cpan.org/dist/' . substitute( getline('.') , '::' , '-' , 'g' )<CR>
 
-  " XXX: rewrite as command
-  " XXX: better key mapping rule.....
   nnoremap <silent> <buffer> p   :call  g:perldoc.open_tab(expand('<cWORD>'),'',0)<CR>
   nnoremap <silent> <buffer> P   :call  g:perldoc.open_tab(expand('<cWORD>'),'',1)<CR>
-
   nnoremap <silent> <buffer> $   :call  g:perldoc.open(expand('<cWORD>'),'')<CR>
 
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
@@ -359,6 +370,8 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> <Enter> :call s:open_module()<CR>
   nnoremap <silent> <buffer> t       :call s:tab_open_module_file_in_paths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+
+  nmap <script><silent><buffer> ?    :cal <SID>ShowHelp()<CR>
 endf
 
 fun! s:CPANWindow.switch_mode()
