@@ -1,7 +1,6 @@
 
-
 NAME=cpan.vim
-DIRS=autoload/ plugin/
+DIRS=autoload plugin
 VERSION=3.0
 
 bundle-deps:
