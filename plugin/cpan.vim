@@ -129,17 +129,157 @@ fun! s:CPANWindow.init_buffer()
   cal self.buffer_name()
 endf
 
+
+fun! s:get_perllib_path()
+  if &filetype && &filetype == 'perl'
+    let l:path = &path
+    if strlen(l:path) > 1 
+      return split( l:path , ',')
+    endif
+  else
+    return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
+  endif
+endf
+
+" expiry by min
+fu! s:is_expired(file,expiry)
+  let lt = localtime( )
+  let ft = getftime( expand( a:file ) )
+  let dist = lt - ft
+  return dist > a:expiry * 60 
+endf
+
+
+fun! s:get_cpan_installed_module_list(force)
+  " check runtime cache
+  if a:force == 0 && exists('g:cpan_ins_mod_cache')
+    echomsg 'runtime cache'
+    return g:cpan_ins_mod_cache
+  endif
+
+  if exists('g:cpan_ins_mod_cachef')
+        \ && a:force == 0 
+        \ && filereadable( g:cpan_ins_mod_cachef ) 
+        \ && ! s:is_expired( g:cpan_ins_mod_cachef , g:cpan_cache_expiry )
+      let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
+      return g:cpan_ins_mod_cache
+  endif
+
+  " update cache
+  let paths = 'lib ' . join( s:get_perllib_path(),' ')
+
+  " XXX: make this background
+  cal s:echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
+  cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq > " . g:cpan_ins_mod_cachef )
+
+  if v:shell_error 
+    echoerr v:shell_error
+  endif
+  cal s:echo("ready")
+
+  let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
+  return g:cpan_ins_mod_cache
+endf
+
+fun! s:get_path_module_list(path,force)
+  let cache_name = a:path
+  let cache_name =  tolower( substitute( cache_name , '/' , '.' , 'g') )
+
+  let cache_dir = expand('~/.vim/cache/')
+  if ! isdirectory( cache_dir )
+    cal mkdir( cache_dir )
+  endif
+
+  let cpan_path_cachef = cache_dir . cache_name
+
+  " cache for differnet path
+  if a:force == 0 && exists('g:cpan_path_cache') && exists('g:cpan_path_cache[ a:path ]') 
+    return g:cpan_path_cache[ a:path ]
+  endif
+
+  if ! exists('g:cpan_path_cache') 
+    let g:cpan_path_cache = { }
+  endif
+
+  if a:force == 0 && filereadable( cpan_path_cachef ) && ! s:is_expired( cpan_path_cachef , g:cpan_cache_expiry )
+    let g:cpan_path_cache[ a:path ] = readfile( cpan_path_cachef )
+    return g:cpan_path_cache[ a:path ]
+  endif
+
+  cal s:echo( "finding packages... from " . a:path )
+
+  if exists('use_pcre_grep') 
+    call system( 'find '.a:path.' -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
+        \ . " | sort | uniq > " . cpan_path_cachef )
+  else
+    call system( 'find '.a:path.' -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq > " . cpan_path_cachef )
+  endif
+  cal s:echo('cached')
+
+  let g:cpan_path_cache[ a:path ] = readfile( cpan_path_cachef )
+  return g:cpan_path_cache[ a:path ]
+endf
+
+fun! s:get_currentlib_cpan_module_list(force)
+  return s:get_path_module_list(getcwd().'/lib',a:force)
+endf
+
+
 fun! s:CPANWindow.index()
   if self.search_mode == g:CPAN.Mode.Installed
-    return libperl#get_cpan_installed_module_list(0)
+    return s:get_cpan_installed_module_list(0)
   elseif self.search_mode == g:CPAN.Mode.All
-    return libperl#get_cpan_module_list(0)
+    return s:get_cpan_module_list(0)
   elseif self.search_mode == g:CPAN.Mode.CurrentLib
-    return libperl#get_currentlib_cpan_module_list(0)
+    return s:get_currentlib_cpan_module_list(0)
   else
     return [ ]
   endif
 endf
+
+fun! s:open_module()
+  " XXX: this should not be here.
+  if g:cpan_win_type == 'v'
+    vertical resize 98
+  else
+    resize 60
+  endif
+  call s:open_module_in_paths( getline('.') )
+endf
+
+fun! s:translate_module_name(n)
+  return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
+endf
+
+let g:pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+
+fun! s:get_cursor_module_name()
+  return matchstr( expand("<cWORD>") , g:pkg_token_pattern )
+endf
+
+
+fun! s:open_module_in_paths(mod)
+  let paths = s:get_perllib_path()
+  let fname = s:translate_module_name( a:mod )
+  let methodname = s:get_cursor_method_name()
+  call insert(paths, 'lib/' )
+  for p in paths 
+    let fullpath = p . '/' . fname
+    if filereadable( fullpath ) 
+      exec 'tabe ' . fullpath
+      return
+    endif
+  endfor
+  echomsg "No such module: " . a:mod
+endf
+
 
 fun! s:CPANWindow.buffer_reload_init()
   call self.buffer_name()
@@ -164,9 +304,32 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> f   :exec '!sudo cpanf ' . expand('<cWORD>')<CR>
 
-  nnoremap <silent> <buffer> <Enter> :call libperl#open_module()<CR>
-  nnoremap <silent> <buffer> t       :call libperl#tab_open_module_file_in_paths( getline('.') )<CR>
+  nnoremap <silent> <buffer> <Enter> :call s:open_module()<CR>
+  nnoremap <silent> <buffer> t       :call s:tab_open_module_file_in_paths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+endf
+
+fun! s:get_module_file_path(mod)
+  let paths = s:get_perllib_path()
+  let fname = s:translate_module_name( a:mod )
+  call insert(paths,'lib/')
+  for p in paths
+    let fullpath = p . '/' . fname
+    if filereadable( fullpath ) 
+      return fullpath
+    endif
+  endfor
+  return 
+endf
+
+fun! s:tab_open_module_file_in_paths(mod)
+  let paths = s:get_perllib_path()
+  let fname = s:translate_module_name( a:mod )
+  let methodname = s:get_cursor_method_name()
+  let path = s:get_module_file_path( a:mod )
+  if filereadable( path ) 
+    exec 'tabe ' . path
+  endif
 endf
 
 fun! s:CPANWindow.switch_mode()
@@ -192,16 +355,83 @@ fun! s:CPANWindow.buffer_name()
   endif
 endf
 
+fun! s:get_package_sourcelist_path()
+  let paths = [ 
+        \expand('~/.cpanplus/02packages.details.txt.gz'),
+        \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
+        \]
+  if exists('g:cpan_user_defined_sources')
+    call extend( paths , g:cpan_user_defined_sources )
+  endif
+
+  for f in paths 
+    if filereadable( f ) 
+      return f
+    endif
+  endfor
+  return
+endf
+
 
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
 
 " Completions &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"{{{
 "
-fu! CompleteInstalledCPANModuleList()
+" s:get_cpan_module_list : 
+"   @force: override cache
+" 
+"   Return: cpan module list [list]
+"
+let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
+let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
+let g:cpan_cache_expiry = 60 * 24 * 20
+
+fun! s:get_cpan_module_list(force)
+  " check runtime cache
+  if a:force == 0 && exists('g:cpan_mod_cache')
+    retu g:cpan_mod_cache
+  endif
+
+  " check file cache if we define a cache filename
+  if exists('g:cpan_mod_cachef')
+        \ && a:force == 0 
+        \ && filereadable(g:cpan_mod_cachef) 
+        \ && ! s:is_expired( g:cpan_mod_cachef , g:cpan_cache_expiry )  
+
+      let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+      return g:cpan_mod_cache
+  endif
+
+  let path =  s:get_package_sourcelist_path()
+  if filereadable( path ) 
+    cal s:echo("executing zcat: " . path )
+    let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
+    cal system( cmd )
+    if v:shell_error 
+      echoerr v:shell_error
+    endif
+    cal s:echo("cached: " . g:cpan_mod_cachef )
+  endif
+  let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+  return g:cpan_mod_cache
+endf
+
+fun! s:get_pkg_comp_start()
+  return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
+endf
+
+fun! s:get_pkg_comp_base()
+  let col = col('.')
+  let [ lnum , coln ] = s:get_pkg_comp_start()
+  let line = getline('.')
+  return strpart( getline('.') , coln , col )
+endf
+
+fun! CompleteInstalledCPANModuleList()
   cal PrepareInstalledCPANModuleCache()
-  let start_pos  = libperl#get_pkg_comp_start()
-  let base = libperl#get_pkg_comp_base()
+  let start_pos = s:get_pkg_comp_start()
+  let base      = s:get_pkg_comp_base()
   call s:echo( "filtering..." )
   " let res = filter( copy( g:cpan_installed_pkgs ) , 'v:val =~ "' . base . '"' )
   let res = []
@@ -214,14 +444,14 @@ fu! CompleteInstalledCPANModuleList()
   return ''
 endf
 
-fu! CompleteCPANModuleList()
+fun! CompleteCPANModuleList()
   if len( g:cpan_pkgs ) == 0 
     cal s:echo("preparing cpan module list...")
-    let g:cpan_pkgs = libperl#get_cpan_module_list(0)
+    let g:cpan_pkgs = s:get_cpan_module_list(0)
     cal s:echo("done")
   endif
-  let start_pos  = libperl#get_pkg_comp_start()
-  let base = libperl#get_pkg_comp_base()
+  let start_pos  = s:get_pkg_comp_start()
+  let base = s:get_pkg_comp_base()
   cal s:echo("filtering")
   let res = filter( copy( g:cpan_pkgs ) , 'v:val =~ "' . base . '"' )
   cal complete( start_pos[1]+1 , res )
@@ -233,9 +463,9 @@ com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
 
-com! ReloadModuleCache              :cal libperl#get_cpan_module_list(1)
-com! ReloadInstalledModuleCache     :cal libperl#get_cpan_installed_module_list(1)
-com! ReloadCurrentLibModuleCache    :cal libperl#get_currentlib_cpan_module_list(1)
+com! ReloadModuleCache              :cal s:get_cpan_module_list(1)
+com! ReloadInstalledModuleCache     :cal s:get_cpan_installed_module_list(1)
+com! ReloadCurrentLibModuleCache    :cal s:get_currentlib_cpan_module_list(1)
 
 " inoremap <C-x><C-m>  <C-R>=CompleteCPANModuleList()<CR>
 " inoremap <C-x><C-m>                 <C-R>=CompleteInstalledCPANModuleList()<CR>
