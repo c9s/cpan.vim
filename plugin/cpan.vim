@@ -412,5 +412,5 @@ if g:cpan_default_mapping
   nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
   nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
   "inoremap <C-x><C-m>                 <C-R>=CompleteCPANModuleList()<CR>
-fi
+endif
 " }}}
