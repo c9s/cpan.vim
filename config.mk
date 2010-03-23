@@ -2,7 +2,7 @@
 
 NAME=cpan.vim
 DIRS=autoload/ plugin/
-VERSION=0.8
+VERSION=3.0
 
 bundle-deps:
 	$(call fetch_github,c9s,search-window.vim,master,vimlib/autoload/swindow.vim,autoload/swindow.vim)
