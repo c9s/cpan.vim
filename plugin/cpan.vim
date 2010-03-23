@@ -188,8 +188,10 @@ fun! CPANInstalledModules(force)
         \ && a:force == 0 
         \ && filereadable( g:cpan_ins_mod_cachef ) 
         \ && ! s:is_expired( g:cpan_ins_mod_cachef , g:cpan_cache_expiry )
-      let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
-      return g:cpan_ins_mod_cache
+    let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
+    return g:cpan_ins_mod_cache
+  elseif a:force == 0
+    return [ "Please Press Ctrl-R to find installed modules." ]
   endif
 
   " update cache
@@ -271,6 +273,7 @@ fun! s:ShowHelp()
   echo "   I       - Install this module"
   echo "   f       - Install this module by cpanf (CPAN Fresh)"
   echo "   t       - Open this module source file in new tab"
+  echo "   R       - To reload installed modules"
   echo "   <ENTER> - Open this module source file in split window"
 endf
 " }}}
@@ -308,7 +311,7 @@ fun! s:CPANWindow.index()
   elseif self.search_mode == g:CPAN.Mode.All
     return CPANModules(0)
   elseif self.search_mode == g:CPAN.Mode.CurrentLib
-    return s:CurrentLibModules(0)
+    return CurrentLibModules(0)
   else
     return [ ]
   endif
@@ -338,7 +341,11 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> t       :call s:tab_open_module_file_in_paths( getline('.') )<CR>
   nnoremap <silent> <buffer> I       :exec '!' . g:cpan_cmd . ' ' . getline('.')<CR>
 
+  imap <buffer> <C-r> <ESC>:ReloadInstalledModuleCache<CR>
+  nmap <buffer> <C-r> :ReloadInstalledModuleCache<CR>
+
   nmap <script><silent><buffer> ?    :cal <SID>ShowHelp()<CR>
+
 endf
 
 fun! s:CPANWindow.switch_mode()
