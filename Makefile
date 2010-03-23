@@ -56,8 +56,7 @@
 
 RECORD_FILE=.record
 PWD=`pwd`
-README_FILES=`find . -type f -iname "README*"`
-README_FILES=`find . -type f -iname "README*"`
+README_FILES=`ls -1 | grep -i readme`
 WGET_OPT=-c -nv
 CURL_OPT=
 RECORD_SCRIPT=.mkrecord
