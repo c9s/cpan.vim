@@ -81,6 +81,8 @@ fun! s:getModulePath(mod)
   return 
 endf
 
+
+" fetch source list from remote
 fun! CPANSourceLists()
   let paths = [ 
         \expand('~/.cpanplus/02packages.details.txt.gz'),
@@ -95,6 +97,30 @@ fun! CPANSourceLists()
       return f
     endif
   endfor
+
+  " not found
+  let f = expand('~/.cpan/sources/modules/02packages.details.txt.gz')
+  " XXX: refactor me !!
+  if ! isdirectory( expand('~/.cpan') )
+    cal mkdir( expand('~/.cpan') )
+  endif
+
+  if ! isdirectory( expand('~/.cpan/sources') )
+    cal mkdir( expand('~/.cpan/sources') )
+  endif
+
+  if ! isdirectory( expand('~/.cpan/sources/modules') )
+    cal mkdir( expand('~/.cpan/sources/modules') )
+  endif
+
+  if executable('curl')
+    cal system('curl http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -o ' . f)
+    return f
+  elseif executable('wget')
+    cal system('wget http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -O ' . f)
+    return f
+  endif
+  echoerr "You don't have curl or wget to download the package list."
   return
 endf
 
@@ -167,14 +193,17 @@ fun! CPANModules(force)
   if filereadable( path ) 
     cal s:echo("executing zcat: " . path )
     let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
-    cal system( cmd )
+    echo system( cmd )
     if v:shell_error 
       echoerr v:shell_error
     endif
     cal s:echo("cached: " . g:cpan_mod_cachef )
+    let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+    return g:cpan_mod_cache
+  else
+    echoerr "CPAN sources list not found!"
+    return [ ]
   endif
-  let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
-  return g:cpan_mod_cache
 endf
 
 fun! CPANInstalledModules(force)
@@ -197,13 +226,11 @@ fun! CPANInstalledModules(force)
   " update cache
   let paths = 'lib ' . join( s:get_perllib_path(),' ')
 
-  " XXX: make this background
   cal s:echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
-  cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
+  let out = system( 'find ' . paths . ' -type f -iname "*.pm" ' 
         \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
         \ . " | perl -pe 's/^package (.*?);/\$1/' "
         \ . " | sort | uniq > " . g:cpan_ins_mod_cachef )
-
   if v:shell_error 
     echoerr v:shell_error
   endif
