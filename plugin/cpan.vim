@@ -336,7 +336,7 @@ fun! s:CPANWindow.init_mapping()
 
   nnoremap <silent> <buffer> <Enter> :call s:open_module()<CR>
   nnoremap <silent> <buffer> t       :call s:tab_open_module_file_in_paths( getline('.') )<CR>
-  nnoremap <silent> <buffer> I       :exec '!' . g:cpan_install_command . ' ' . getline('.')<CR>
+  nnoremap <silent> <buffer> I       :exec '!' . g:cpan_cmd . ' ' . getline('.')<CR>
 
   nmap <script><silent><buffer> ?    :cal <SID>ShowHelp()<CR>
 endf
@@ -386,7 +386,7 @@ cal s:defopt('g:cpan_ins_mod_cachef', expand('~/.vim-cpan-installed-module-cache
 cal s:defopt('g:cpan_cache_expiry' , 60 * 24 * 20)
 
 if ! exists('g:cpan_browser_command')
-  if system('uname') =~ 'Darwin'
+  if system('uname') =~ 'Darwin' && executable('open')
     let g:cpan_browser_command  = 'open '
   elseif system('uname') =~ 'Linux'
     let g:cpan_browser_command  = 'firefox'
@@ -395,13 +395,15 @@ if ! exists('g:cpan_browser_command')
   endif
 endif
 
-if ! exists('g:cpan_install_command')
-  if executable('cpanm')
-    let g:cpan_install_command = 'sudo cpanm '
+if ! exists('g:cpan_cmd')
+  if executable( expand('~/bin/cpanm') )
+    let g:cpan_cmd = 'sudo ' . expand('~/bin/cpanm')
+  elseif executable('cpanm')
+    let g:cpan_cmd = 'sudo cpanm '
   elseif executable('cpan')
-    let g:cpan_install_command = 'sudo cpan'
+    let g:cpan_cmd = 'sudo cpan'
   elseif executable('cpanp')
-    let g:cpan_install_command = 'sudo cpanp i'
+    let g:cpan_cmd = 'sudo cpanp i'
   endif
 endif
 " }}}
