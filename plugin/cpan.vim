@@ -384,6 +384,7 @@ cal s:defopt('g:cpan_win_height',10)
 cal s:defopt('g:cpan_mod_cachef', expand('~/.vim-cpan-module-cache'))
 cal s:defopt('g:cpan_ins_mod_cachef', expand('~/.vim-cpan-installed-module-cache'))
 cal s:defopt('g:cpan_cache_expiry' , 60 * 24 * 20)
+cal s:defopt('g:cpan_default_mapping',1)
 
 if ! exists('g:cpan_browser_command')
   if system('uname') =~ 'Darwin' && executable('open')
@@ -406,4 +407,10 @@ if ! exists('g:cpan_cmd')
     let g:cpan_cmd = 'sudo cpanp i'
   endif
 endif
+
+if g:cpan_default_mapping 
+  nnoremap <silent> <C-c><C-m>        :OpenCPANWindowS<CR>
+  nnoremap <silent> <C-c><C-v>        :OpenCPANWindowSV<CR>
+  "inoremap <C-x><C-m>                 <C-R>=CompleteCPANModuleList()<CR>
+fi
 " }}}
