@@ -271,15 +271,13 @@ fun! s:ShowHelp()
   echo "   <ENTER> - Open this module source file in split window"
 endf
 
-
 if exists('g:loaded_cpan') || v:version < 701
   "finish
 endif
 
 let g:loaded_cpan = 0200  "Version
 " }}}
-
-" configurations "{{{
+" Configurations "{{{
 let g:CPAN = { }
 let g:CPAN.Mode = { 'Installed': 1 , 'CurrentLib': 2 , 'All': 3  }
 
@@ -294,7 +292,6 @@ let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
 let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
 let g:cpan_cache_expiry = 60 * 24 * 20
 "}}}
-
 " Default Option Init {{{
 if ! exists('g:cpan_browser_command')
   if system('uname') =~ 'Darwin'
@@ -316,12 +313,13 @@ if ! exists('g:cpan_install_command')
   endif
 endif
 " }}}
+
+
+" use Perldoc
 cal perldoc#load()
 
 
-
-
-" &&&& CPAN Window &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& {{{
+" CPAN Window {{{
 let s:CPANWindow = copy( swindow#class )
 let s:CPANWindow.search_mode = g:CPAN.Mode.Installed
 
@@ -399,6 +397,7 @@ endf
 " }}}
 
 " &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& }}}
+" Commands {{{
 com! SwitchCPANWindowMode   :call s:CPANWindow.switch_mode()
 com! OpenCPANWindowS        :call s:CPANWindow.open('topleft', 'split',g:cpan_win_height)
 com! OpenCPANWindowSV       :call s:CPANWindow.open('topleft', 'vsplit',g:cpan_win_width)
@@ -407,3 +406,4 @@ com! ReloadModuleCache              :cal g:get_cpan_module_list(1)
 com! ReloadInstalledModuleCache     :cal g:get_cpan_installed_module_list(1)
 com! ReloadCurrentLibModuleCache    :cal s:get_currentlib_cpan_module_list(1)
 
+" }}}
