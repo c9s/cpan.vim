@@ -99,6 +99,7 @@ fun! CPANSourceLists()
   endfor
 
   " not found
+  cal s:echo("CPAN source list not found.")
   let f = expand('~/.cpan/sources/modules/02packages.details.txt.gz')
   " XXX: refactor me !!
   if ! isdirectory( expand('~/.cpan') )
@@ -113,11 +114,12 @@ fun! CPANSourceLists()
     cal mkdir( expand('~/.cpan/sources/modules') )
   endif
 
+  cal s:echo("Downloading CPAN source list.")
   if executable('curl')
-    cal system('curl http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -o ' . f)
+    exec '!curl http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -o ' . f
     return f
   elseif executable('wget')
-    cal system('wget http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -O ' . f)
+    exec '!wget http://cpan.nctu.edu.tw/modules/02packages.details.txt.gz -O ' . f
     return f
   endif
   echoerr "You don't have curl or wget to download the package list."
