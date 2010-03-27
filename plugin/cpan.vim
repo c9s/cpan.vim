@@ -175,6 +175,20 @@ fun! CurrentLibModules(force)
 endf
 
 
+fun! CPANParseSourceList(file)
+  if executable('zcat')
+    let cmd = 'zcat ' . a:file . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
+  else
+    let cmd = 'cat ' . a:file . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
+  endif
+  echo system( cmd )
+  if v:shell_error 
+    echoerr v:shell_error
+  endif
+  let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+  return g:cpan_mod_cache
+endf
+
 fun! CPANModules(force)
   " check runtime cache
   if a:force == 0 && exists('g:cpan_mod_cache')
@@ -193,15 +207,7 @@ fun! CPANModules(force)
 
   let path =  CPANSourceLists()
   if filereadable( path ) 
-    cal s:echo("executing zcat: " . path )
-    let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
-    echo system( cmd )
-    if v:shell_error 
-      echoerr v:shell_error
-    endif
-    cal s:echo("cached: " . g:cpan_mod_cachef )
-    let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
-    return g:cpan_mod_cache
+    return CPANParseSourceList( path )
   else
     echoerr "CPAN sources list not found!"
     return [ ]
