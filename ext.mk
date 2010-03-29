@@ -9,8 +9,8 @@ install-cpanm-git:
 	perl Makefile.PL && make && sudo make install
 
 install-cpanm:
-	mkdir ~/bin/
+	mkdir -p ~/bin/
 	if [[ -n `which wget` ]] ; then wget http://xrl.us/cpanm -O $(INSTALL_CPANM_TO) ; \
 	elif [[ -n `which curl` ]] ; then curl http://xrl.us/cpanm -o $(INSTALL_CPANM_TO) ; \
 	fi
-	chmod +x ($INSTALL_CPANM_TO)
+	chmod +x $(INSTALL_CPANM_TO)
