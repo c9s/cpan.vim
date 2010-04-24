@@ -130,7 +130,6 @@ endf
 fun! s:tab_open_module_file_in_paths(mod)
   let paths = s:get_perllib_path()
   let fname = s:translate_module_name( a:mod )
-  let methodname = s:get_cursor_method_name()
   let path = s:getModulePath( a:mod )
   if filereadable( path ) 
     exec 'tabe ' . path
@@ -141,7 +140,6 @@ endf
 fun! s:open_module_in_paths(mod)
   let paths = s:get_perllib_path()
   let fname = s:translate_module_name( a:mod )
-  let methodname = s:get_cursor_method_name()
   call insert(paths, 'lib/' )
   for p in paths 
     let fullpath = p . '/' . fname
@@ -372,9 +370,9 @@ fun! s:CPANWindow.init_mapping()
   nnoremap <silent> <buffer> !   :exec '!perldoc ' . expand('<cWORD>')<CR>
   nnoremap <silent> <buffer> f   :exec '!sudo cpanf ' . expand('<cWORD>')<CR>
 
-  nnoremap <silent> <buffer> <Enter> :call s:open_module()<CR>
-  nnoremap <silent> <buffer> t       :call s:tab_open_module_file_in_paths( getline('.') )<CR>
-  nnoremap <silent> <buffer> I       :exec '!' . g:cpan_cmd . ' ' . getline('.')<CR>
+  nnoremap <silent><script><buffer> <Enter> :call <SID>open_module()<CR>
+  nnoremap <silent><script><buffer> t       :call <SID>tab_open_module_file_in_paths( getline('.') )<CR>
+  nnoremap <silent><script><buffer> I       :exec '!' . g:cpan_cmd . ' ' . getline('.')<CR>
 
   imap <buffer> <C-r> <ESC>:ReloadInstalledModuleCache<CR>
   nmap <buffer> <C-r> :ReloadInstalledModuleCache<CR>
