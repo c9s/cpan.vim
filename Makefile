@@ -255,7 +255,7 @@ pure-install:
 		if [[ -n $$vimfile ]] ; then \
 			$(call install_file,$$vimfile) ; fi ; done
 
-install: init-runtime bundle pure-install record
+install: init-runtime bundle pure-install
 
 
 uninstall-files:
@@ -266,7 +266,7 @@ uninstall-files:
 		if [[ -n $$vimfile ]] ; then \
 			$(call unlink_file,$$vimfile) ; fi ; done
 
-uninstall: uninstall-files rmrecord
+uninstall: uninstall-files
 
 link: init-runtime
 	@echo "Linking"
@@ -298,41 +298,7 @@ vimball:
 	@rm -vf .tmp_list
 	@echo "$(NAME)-$(VERSION).vba is ready."
 
-mkrecordscript:
-		@echo ""  >  $(RECORD_SCRIPT)
-		@echo "fun! s:mkmd5(file)"  >> $(RECORD_SCRIPT)
-		@echo "  if executable('md5')"  >> $(RECORD_SCRIPT)
-		@echo "    return system('cat ' . a:file . ' | md5')"  >> $(RECORD_SCRIPT)
-		@echo "  else"  >> $(RECORD_SCRIPT)
-		@echo "    return \"\""  >> $(RECORD_SCRIPT)
-		@echo "  endif"  >> $(RECORD_SCRIPT)
-		@echo "endf"  >> $(RECORD_SCRIPT)
-		@echo "let files = readfile('.record')"  >> $(RECORD_SCRIPT)
-		@echo "let package_name = remove(files,0)"  >> $(RECORD_SCRIPT)
-		@echo "let script_version      = remove(files,0)"  >> $(RECORD_SCRIPT)
-		@echo "let record = { 'version' : 0.3 , 'generated_by': 'Vim-Makefile' , 'script_version': script_version , 'install_type' : 'makefile' , 'package' : package_name , 'files': [  ] }"  >> $(RECORD_SCRIPT)
-		@echo "for file in files "  >> $(RECORD_SCRIPT)
-		@echo "  let md5 = s:mkmd5(file)"  >> $(RECORD_SCRIPT)
-		@echo "  cal add( record.files , {  'checksum': md5 , 'file': file  } )"  >> $(RECORD_SCRIPT)
-		@echo "endfor"  >> $(RECORD_SCRIPT)
-		@echo "redir => output"  >> $(RECORD_SCRIPT)
-		@echo "silent echon record"  >> $(RECORD_SCRIPT)
-		@echo "redir END"  >> $(RECORD_SCRIPT)
-		@echo "let content = join(split(output,\"\\\\n\"),'')"  >> $(RECORD_SCRIPT)
-		@echo "let record_file = expand('~/.vim/record/' . package_name )"  >> $(RECORD_SCRIPT)
-		@echo "cal writefile( [content] , record_file )"  >> $(RECORD_SCRIPT)
-		@echo "cal delete('.record')"  >> $(RECORD_SCRIPT)
-		@echo "echo \"Done\""  >> $(RECORD_SCRIPT)
 
-
-record: mkfilelist mkrecordscript
-	vim --noplugin -V10install.log -c "so $(RECORD_SCRIPT)" -c "q"
-	@echo "Vim script record making log: install.log"
-#	@rm -vf $(RECORD_FILE)
-
-rmrecord:
-	@echo "Removing Record"
-	@rm -vf $(VIMRUNTIME)/record/$(NAME)
 
 clean: clean-bundle-deps
 	@rm -vf $(RECORD_FILE)
